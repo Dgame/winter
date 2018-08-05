@@ -1,16 +1,16 @@
 use basic::{size_t, Position, Size};
 use buffer::Buffer;
 use cell::Cell;
-use viewport::Viewport;
 use console::Console;
 use std::rc::Rc;
+use viewport::Viewport;
 
 pub struct View {
     console: Rc<Console>,
     buffer: Buffer,
     viewport: Viewport,
     offset: usize,
-    needs_update: bool
+    needs_update: bool,
 }
 
 fn index_to_2d(index: size_t, size: Size) -> Position {
@@ -20,7 +20,7 @@ fn index_to_2d(index: size_t, size: Size) -> Position {
     Position::new(x, y)
 }
 
-impl View{
+impl View {
     pub fn new(console: Rc<Console>, pos: Position, size: Size) -> Self {
         let mut buffer = Buffer::new(size);
         buffer.init();
@@ -30,7 +30,7 @@ impl View{
             buffer,
             viewport: Viewport::new(pos, size),
             offset: 0,
-            needs_update: true
+            needs_update: true,
         }
     }
 
@@ -71,7 +71,7 @@ impl View{
         for (i, cell) in self.buffer.front.iter().enumerate() {
             if self.needs_update || *cell != self.buffer.back[i] {
                 let mut pos = index_to_2d(i as size_t, self.viewport.get_size());
-                let cell = if pos.x == 0 {
+                let cell = if pos.x == 0 && cell.is_empty() {
                     Cell::border()
                 } else {
                     *cell

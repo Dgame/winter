@@ -13,9 +13,11 @@ use winapi::shared::windef::HWND;
 use winapi::um::consoleapi::GetConsoleMode;
 use winapi::um::consoleapi::GetNumberOfConsoleInputEvents;
 use winapi::um::consoleapi::SetConsoleMode;
+use winapi::um::errhandlingapi::GetLastError;
 use winapi::um::handleapi::INVALID_HANDLE_VALUE;
 use winapi::um::processenv::GetStdHandle;
 use winapi::um::winbase::{STD_INPUT_HANDLE, STD_OUTPUT_HANDLE};
+use winapi::um::wincon::SetConsoleCP;
 use winapi::um::wincon::ENABLE_MOUSE_INPUT;
 use winapi::um::wincon::ENABLE_WINDOW_INPUT;
 use winapi::um::wincon::{
@@ -26,8 +28,6 @@ use winapi::um::wincon::{
 };
 use winapi::um::winnt::HANDLE;
 use winapi::um::winuser::{SetWindowPos, SWP_NOSIZE, SWP_NOZORDER};
-use winapi::um::wincon::SetConsoleCP;
-use winapi::um::errhandlingapi::GetLastError;
 
 trait Empty {
     fn empty() -> Self;
@@ -114,7 +114,12 @@ impl Console {
         }
 
         unsafe {
-            assert_eq!(1, SetConsoleCP(65001), "Could not set Code-Page: {}", GetLastError());
+            assert_eq!(
+                1,
+                SetConsoleCP(65001),
+                "Could not set Code-Page: {}",
+                GetLastError()
+            );
         }
 
         let mut console = Self {

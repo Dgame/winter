@@ -14,7 +14,7 @@ impl Viewport {
     pub fn half(&self) -> Self {
         Self {
             pos: self.pos,
-            size: self.size.half()
+            size: self.size.half(),
         }
     }
 

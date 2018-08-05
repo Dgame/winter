@@ -1,12 +1,12 @@
-use view::View;
+use basic::Position;
+use basic::Size;
 use console::Console;
 use std::rc::Rc;
-use basic::Size;
-use basic::Position;
+use view::View;
 
 struct ViewChange {
     new_size: Size,
-    pos: Position
+    pos: Position,
 }
 
 pub struct Terminal {
@@ -68,10 +68,7 @@ impl Terminal {
             let mut pos = view.get_position();
             pos.x += new_size.width;
 
-            ViewChange {
-                new_size,
-                pos
-            }
+            ViewChange { new_size, pos }
         });
 
         self.new_view(change.pos, change.new_size);

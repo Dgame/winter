@@ -22,21 +22,21 @@ impl Size {
     pub fn half(&self) -> Self {
         Self {
             width: self.width / 2,
-            height: self.height / 2
+            height: self.height / 2,
         }
     }
 
     pub fn with_half_width(&self) -> Self {
         Self {
             width: self.width / 2,
-            height: self.height
+            height: self.height,
         }
     }
 
     pub fn with_half_height(&self) -> Self {
         Self {
             width: self.width,
-            height: self.height / 2
+            height: self.height / 2,
         }
     }
 }

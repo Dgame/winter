@@ -20,7 +20,7 @@ pub enum Color {
     DarkBlue,
     DarkMagenta,
     DarkCyan,
-    DarkWhite
+    DarkWhite,
 }
 
 pub fn into_fg_attributes(color: Color) -> u16 {
@@ -29,9 +29,7 @@ pub fn into_fg_attributes(color: Color) -> u16 {
         Color::DarkBlue => FOREGROUND_BLUE,
         Color::Cyan => FOREGROUND_INTENSITY | FOREGROUND_GREEN | FOREGROUND_BLUE,
         Color::DarkCyan => FOREGROUND_GREEN | FOREGROUND_BLUE,
-        Color::White => {
-            FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE
-        }
+        Color::White => FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
         Color::DarkWhite => FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
         Color::Black => FOREGROUND_INTENSITY,
         Color::DarkBlack => 0,
@@ -52,9 +50,7 @@ pub fn into_bg_attributes(color: Color) -> u16 {
         Color::DarkBlue => BACKGROUND_BLUE,
         Color::Cyan => BACKGROUND_INTENSITY | BACKGROUND_GREEN | BACKGROUND_BLUE,
         Color::DarkCyan => BACKGROUND_GREEN | BACKGROUND_BLUE,
-        Color::White => {
-            BACKGROUND_INTENSITY | BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE
-        }
+        Color::White => BACKGROUND_INTENSITY | BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE,
         Color::DarkWhite => BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE,
         Color::Black => BACKGROUND_INTENSITY,
         Color::DarkBlack => 0,
@@ -68,4 +64,3 @@ pub fn into_bg_attributes(color: Color) -> u16 {
         Color::DarkYellow => BACKGROUND_RED | BACKGROUND_GREEN,
     }
 }
-

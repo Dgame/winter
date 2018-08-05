@@ -9,14 +9,14 @@ mod buffer;
 mod cell;
 mod color;
 mod console;
+mod terminal;
 mod view;
 mod viewport;
-mod terminal;
 
 fn main() {
     let mut terminal = Terminal::default();
-//    terminal.write_line("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo ");
-//    terminal.write_line("dolores et ea rebum.");
+    //    terminal.write_line("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo ");
+    //    terminal.write_line("dolores et ea rebum.");
     terminal.display();
 
     let stdin = std::io::stdin();
@@ -25,7 +25,7 @@ fn main() {
     stdin.read_line(&mut input).unwrap();
 
     terminal.vsplit();
-//    terminal.write_line("Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.");
+    //    terminal.write_line("Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.");
 
     terminal.display();
 
