@@ -1,5 +1,5 @@
 use basic::Size;
-use cell::Cell;
+use cell::{Cell, DEFAULT_CH};
 
 pub struct Buffer {
     pub front: Vec<Cell>,
@@ -32,13 +32,13 @@ impl Buffer {
 
     pub fn clear_front(&mut self) {
         for cell in &mut self.front {
-            cell.ch = ' ';
+            cell.ch = DEFAULT_CH;
         }
     }
 
     pub fn clear_back(&mut self) {
         for cell in &mut self.back {
-            cell.ch = ' ';
+            cell.ch = DEFAULT_CH;
         }
     }
 }

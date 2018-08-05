@@ -1,6 +1,7 @@
 use basic::Position;
 use basic::Size;
 use cell::Cell;
+use cell::DEFAULT_CH;
 use std::cmp::max;
 use std::cmp::min;
 use std::ffi::CString;
@@ -205,7 +206,7 @@ impl Console {
         unsafe {
             FillConsoleOutputCharacterA(
                 self.output,
-                ' ' as i8,
+                DEFAULT_CH as i8,
                 cell_count as u32,
                 coord_screen,
                 &mut chars_written,

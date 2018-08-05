@@ -1,7 +1,7 @@
 use color::Color;
 use color::{into_bg_attributes, into_fg_attributes};
 
-const DEFAULT_CH: char = ' ';
+pub const DEFAULT_CH: char = ' ';
 const BORDER_CH: char = '~';
 
 static DEFAULT_FG: Color = Color::DarkWhite;
