@@ -10,21 +10,17 @@ use std::mem::zeroed;
 use std::ptr;
 use winapi::shared::minwindef::DWORD;
 use winapi::shared::windef::HWND;
-use winapi::um::consoleapi::GetConsoleMode;
-use winapi::um::consoleapi::GetNumberOfConsoleInputEvents;
-use winapi::um::consoleapi::SetConsoleMode;
+use winapi::um::consoleapi::{GetConsoleMode, GetNumberOfConsoleInputEvents, SetConsoleMode};
 use winapi::um::errhandlingapi::GetLastError;
 use winapi::um::handleapi::INVALID_HANDLE_VALUE;
 use winapi::um::processenv::GetStdHandle;
 use winapi::um::winbase::{STD_INPUT_HANDLE, STD_OUTPUT_HANDLE};
-use winapi::um::wincon::SetConsoleCP;
-use winapi::um::wincon::ENABLE_MOUSE_INPUT;
-use winapi::um::wincon::ENABLE_WINDOW_INPUT;
 use winapi::um::wincon::{
     CHAR_INFO_Char, FillConsoleOutputAttribute, FillConsoleOutputCharacterA, GetConsoleCursorInfo,
-    GetConsoleScreenBufferInfo, GetConsoleWindow, SetConsoleCursorInfo, SetConsoleCursorPosition,
-    SetConsoleScreenBufferSize, SetConsoleTitleA, SetConsoleWindowInfo, WriteConsoleOutputA,
-    CHAR_INFO, CONSOLE_CURSOR_INFO, CONSOLE_SCREEN_BUFFER_INFO, COORD, SMALL_RECT,
+    GetConsoleScreenBufferInfo, GetConsoleWindow, SetConsoleCP, SetConsoleCursorInfo,
+    SetConsoleCursorPosition, SetConsoleScreenBufferSize, SetConsoleTitleA, SetConsoleWindowInfo,
+    WriteConsoleOutputA, CHAR_INFO, CONSOLE_CURSOR_INFO, CONSOLE_SCREEN_BUFFER_INFO, COORD,
+    ENABLE_MOUSE_INPUT, ENABLE_WINDOW_INPUT, SMALL_RECT,
 };
 use winapi::um::winnt::HANDLE;
 use winapi::um::winuser::{SetWindowPos, SWP_NOSIZE, SWP_NOZORDER};
@@ -90,17 +86,53 @@ impl Drop for Console {
 impl Console {
     pub fn new() -> Self {
         let handle = unsafe { GetConsoleWindow() };
+        unsafe {
+            assert_ne!(
+                ptr::null(),
+                handle,
+                "Could not get console window handle: ERROR {}",
+                GetLastError()
+            );
+        }
+
         let output = unsafe { GetStdHandle(STD_OUTPUT_HANDLE) };
+        unsafe {
+            assert_ne!(
+                INVALID_HANDLE_VALUE,
+                output,
+                "Could not get standard output handle: ERROR {}",
+                GetLastError()
+            );
+        }
+
         let input = unsafe { GetStdHandle(STD_INPUT_HANDLE) };
+        unsafe {
+            assert_ne!(
+                INVALID_HANDLE_VALUE,
+                input,
+                "Could not get standard window input handle: ERROR {}",
+                GetLastError()
+            );
+        }
 
         let mut restore_mode = 0;
         unsafe {
-            GetConsoleMode(input, &mut restore_mode);
+            assert_ne!(
+                0,
+                GetConsoleMode(input, &mut restore_mode),
+                "Could not get console window mode: ERROR {}",
+                GetLastError()
+            );
         }
 
         let mut screen_buffer_info = CONSOLE_SCREEN_BUFFER_INFO::empty();
         unsafe {
-            GetConsoleScreenBufferInfo(output, &mut screen_buffer_info);
+            assert_ne!(
+                0,
+                GetConsoleScreenBufferInfo(output, &mut screen_buffer_info),
+                "Could not get console screen buffer info: ERROR {}",
+                GetLastError()
+            );
         }
 
         let initial_size = Size::new(
@@ -108,16 +140,17 @@ impl Console {
             screen_buffer_info.srWindow.Bottom - screen_buffer_info.srWindow.Top + 1,
         );
 
+        // Skip enter
         let mut read = 0;
         unsafe {
             GetNumberOfConsoleInputEvents(input, &mut read);
         }
 
         unsafe {
-            assert_eq!(
-                1,
+            assert_ne!(
+                0,
                 SetConsoleCP(65001),
-                "Could not set Code-Page: {}",
+                "Could not set Code-Page: : ERROR {}",
                 GetLastError()
             );
         }
