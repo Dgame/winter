@@ -1,8 +1,9 @@
 use basic::Position;
 use basic::Size;
 use console::Console;
-use std::rc::Rc;
+use input::InputEvent;
 use view::View;
+use winapi::um::wincon::KEY_EVENT;
 
 struct ViewChange {
     new_size: Size,
@@ -10,7 +11,7 @@ struct ViewChange {
 }
 
 pub struct Terminal {
-    console: Rc<Console>,
+    console: Console,
     views: Vec<View>,
     active: usize,
 }
@@ -34,8 +35,7 @@ impl Terminal {
         }
 
         let size = console.get_size();
-        let console = Rc::new(console);
-        let view = View::new(console.clone(), Position::zero(), size);
+        let view = View::new(Position::zero(), size);
 
         Self {
             console,
@@ -77,14 +77,26 @@ impl Terminal {
     }
 
     fn new_view(&mut self, pos: Position, size: Size) {
-        let view = View::new(self.console.clone(), pos, size);
+        let view = View::new(pos, size);
 
         self.views.push(view);
     }
 
+    pub fn get_input_events(&mut self) -> Vec<InputEvent> {
+        let mut inputs = Vec::new();
+        for input in self.console.get_input() {
+            match input.EventType {
+                KEY_EVENT => inputs.push(InputEvent::from(&input)),
+                _ => {}
+            }
+        }
+
+        inputs
+    }
+
     pub fn display(&mut self) {
         for view in self.views.iter_mut() {
-            view.display();
+            view.display(&mut self.console);
         }
     }
 }

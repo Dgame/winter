@@ -2,13 +2,9 @@ use color::Color;
 use color::{into_bg_attributes, into_fg_attributes};
 
 pub const DEFAULT_CH: char = ' ';
-const BORDER_CH: char = '~';
 
 static DEFAULT_FG: Color = Color::DarkWhite;
 static DEFAULT_BG: Color = Color::DarkBlack;
-
-static BORDER_FG: Color = Color::DarkWhite;
-static BORDER_BG: Color = Color::Black;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Cell {
@@ -31,7 +27,10 @@ impl Cell {
     }
 
     pub fn border() -> Self {
-        Self::new(BORDER_CH, BORDER_FG, BORDER_BG)
+        let mut cell = Self::default();
+        cell.bg = Color::DarkWhite;
+
+        cell
     }
 
     pub fn new(ch: char, fg: Color, bg: Color) -> Self {
@@ -44,9 +43,5 @@ impl Cell {
 
     pub fn is_empty(&self) -> bool {
         self.ch == DEFAULT_CH
-    }
-
-    pub fn is_border(&self) -> bool {
-        self.ch == BORDER_CH && self.fg == BORDER_FG && self.bg == BORDER_BG
     }
 }

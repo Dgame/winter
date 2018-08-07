@@ -1,16 +1,13 @@
-use basic::Position;
-use basic::Size;
-use cell::Cell;
-use cell::DEFAULT_CH;
-use std::cmp::max;
-use std::cmp::min;
+use basic::{Position, Size};
+use cell::{Cell, DEFAULT_CH};
+use std::cmp::{max, min};
 use std::ffi::CString;
-use std::io::stdout;
-use std::io::Write;
+use std::io::{stdout, Write};
 use std::mem::zeroed;
 use std::ptr;
 use winapi::shared::minwindef::DWORD;
 use winapi::shared::windef::HWND;
+use winapi::um::consoleapi::ReadConsoleInputA;
 use winapi::um::consoleapi::{GetConsoleMode, GetNumberOfConsoleInputEvents, SetConsoleMode};
 use winapi::um::errhandlingapi::GetLastError;
 use winapi::um::handleapi::INVALID_HANDLE_VALUE;
@@ -21,7 +18,7 @@ use winapi::um::wincon::{
     GetConsoleScreenBufferInfo, GetConsoleWindow, SetConsoleCP, SetConsoleCursorInfo,
     SetConsoleCursorPosition, SetConsoleScreenBufferSize, SetConsoleTitleA, SetConsoleWindowInfo,
     WriteConsoleOutputA, CHAR_INFO, CONSOLE_CURSOR_INFO, CONSOLE_SCREEN_BUFFER_INFO, COORD,
-    ENABLE_MOUSE_INPUT, ENABLE_WINDOW_INPUT, SMALL_RECT,
+    ENABLE_MOUSE_INPUT, ENABLE_WINDOW_INPUT, INPUT_RECORD, SMALL_RECT,
 };
 use winapi::um::winnt::HANDLE;
 use winapi::um::winuser::{SetWindowPos, SWP_NOSIZE, SWP_NOZORDER};
@@ -78,7 +75,7 @@ impl Drop for Console {
             SetConsoleScreenBufferSize(self.output, self.screen_buffer_info.dwSize);
         }
 
-        self.clear();
+        //        self.clear();
         self.set_cursor(Position::new(0, 0));
         self.cursor_visible(true);
     }
@@ -141,12 +138,6 @@ impl Console {
             screen_buffer_info.srWindow.Bottom - screen_buffer_info.srWindow.Top + 1,
         );
 
-        // Skip enter
-        let mut read = 0;
-        unsafe {
-            GetNumberOfConsoleInputEvents(input, &mut read);
-        }
-
         unsafe {
             assert_ne!(
                 0,
@@ -165,6 +156,7 @@ impl Console {
             screen_buffer_info,
             initial_size,
         };
+        console.get_input();
         console.set_cursor(Position::new(0, 0));
         console.cursor_visible(false);
         console.clear();
@@ -316,5 +308,42 @@ impl Console {
             self.screen_buffer_info.srWindow.Right - self.screen_buffer_info.srWindow.Left + 1,
             self.screen_buffer_info.srWindow.Bottom - self.screen_buffer_info.srWindow.Top + 1,
         )
+    }
+
+    pub fn get_input(&mut self) -> Vec<INPUT_RECORD> {
+        let mut read = 0;
+        unsafe {
+            GetNumberOfConsoleInputEvents(self.input, &mut read);
+        }
+
+        if read > 0 {
+            self.process_input(read as usize)
+        } else {
+            Vec::new()
+        }
+    }
+
+    fn process_input(&mut self, read: usize) -> Vec<INPUT_RECORD> {
+        let mut input_records = [INPUT_RECORD {
+            EventType: 0,
+            Event: unsafe { zeroed() },
+        }; 128];
+
+        let mut input = 0;
+        unsafe {
+            ReadConsoleInputA(
+                self.input,
+                input_records.as_mut_ptr(),
+                input_records.len() as u32,
+                &mut input,
+            );
+        }
+
+        let mut records = Vec::new();
+        for i in 0..read {
+            records.push(input_records[i]);
+        }
+
+        records
     }
 }
