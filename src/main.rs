@@ -1,15 +1,21 @@
 extern crate winter;
 
 use winter::terminal::Terminal;
+use winter::input::Key;
 
 fn main() {
     let mut terminal = Terminal::default();
     //    terminal.write_line("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo ");
     //    terminal.write_line("dolores et ea rebum.");
-    loop {
+    let mut run = true;
+    while run {
         for event in terminal.get_input_events() {
             if event.is_pressed {
                 println!("Key {:?} was pressed", event.key);
+                if event.key == Key::Escape {
+                    run = false;
+                    break;
+                }
             }
         }
 

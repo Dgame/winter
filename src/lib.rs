@@ -14,7 +14,7 @@ mod buffer;
 mod cell;
 mod color;
 mod console;
-mod input;
+pub mod input;
 pub mod terminal;
 mod view;
 mod viewport;

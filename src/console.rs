@@ -7,18 +7,18 @@ use std::mem::zeroed;
 use std::ptr;
 use winapi::shared::minwindef::DWORD;
 use winapi::shared::windef::HWND;
-use winapi::um::consoleapi::ReadConsoleInputA;
 use winapi::um::consoleapi::{GetConsoleMode, GetNumberOfConsoleInputEvents, SetConsoleMode};
+use winapi::um::consoleapi::ReadConsoleInputA;
 use winapi::um::errhandlingapi::GetLastError;
 use winapi::um::handleapi::INVALID_HANDLE_VALUE;
 use winapi::um::processenv::GetStdHandle;
 use winapi::um::winbase::{STD_INPUT_HANDLE, STD_OUTPUT_HANDLE};
 use winapi::um::wincon::{
-    CHAR_INFO_Char, FillConsoleOutputAttribute, FillConsoleOutputCharacterA, GetConsoleCursorInfo,
-    GetConsoleScreenBufferInfo, GetConsoleWindow, SetConsoleCP, SetConsoleCursorInfo,
-    SetConsoleCursorPosition, SetConsoleScreenBufferSize, SetConsoleTitleA, SetConsoleWindowInfo,
-    WriteConsoleOutputA, CHAR_INFO, CONSOLE_CURSOR_INFO, CONSOLE_SCREEN_BUFFER_INFO, COORD,
-    ENABLE_MOUSE_INPUT, ENABLE_WINDOW_INPUT, INPUT_RECORD, SMALL_RECT,
+    CHAR_INFO, CHAR_INFO_Char, CONSOLE_CURSOR_INFO, CONSOLE_SCREEN_BUFFER_INFO,
+    COORD, ENABLE_MOUSE_INPUT, ENABLE_WINDOW_INPUT, FillConsoleOutputAttribute,
+    FillConsoleOutputCharacterA, GetConsoleCursorInfo, GetConsoleScreenBufferInfo, GetConsoleWindow,
+    INPUT_RECORD, SetConsoleCP, SetConsoleCursorInfo, SetConsoleCursorPosition, SetConsoleScreenBufferSize,
+    SetConsoleTitleA, SetConsoleWindowInfo, SMALL_RECT, WriteConsoleOutputA,
 };
 use winapi::um::winnt::HANDLE;
 use winapi::um::winuser::{SetWindowPos, SWP_NOSIZE, SWP_NOZORDER};
@@ -75,7 +75,7 @@ impl Drop for Console {
             SetConsoleScreenBufferSize(self.output, self.screen_buffer_info.dwSize);
         }
 
-        //        self.clear();
+        self.clear();
         self.set_cursor(Position::new(0, 0));
         self.cursor_visible(true);
     }

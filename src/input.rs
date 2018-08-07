@@ -5,7 +5,8 @@ use winapi::um::wincon::{
     NUMLOCK_ON, RIGHT_ALT_PRESSED, RIGHT_CTRL_PRESSED, SCROLLLOCK_ON, SHIFT_PRESSED,
 };
 
-#[derive(Debug, FromPrimitive)]
+// https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
+#[derive(Debug, FromPrimitive, Eq, PartialEq)]
 pub enum Key {
     Unknown = 0,
     Num0 = 0x30,
