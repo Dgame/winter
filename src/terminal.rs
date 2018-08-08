@@ -94,6 +94,10 @@ impl Terminal {
         inputs
     }
 
+    pub fn write<S: Into<String>>(&mut self, input: S) {
+        self.get_active_view().write(input);
+    }
+
     pub fn display(&mut self) {
         for view in self.views.iter_mut() {
             view.display(&mut self.console);

@@ -6,9 +6,34 @@ use winapi::um::wincon::{
 };
 
 // https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
-#[derive(Debug, FromPrimitive, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, FromPrimitive)]
 pub enum Key {
     Unknown = 0,
+    Back = 0x08,
+    Tab = 0x09,
+    Shift = 0x10,
+    Control = 0x11,
+    Alt = 0x12,
+    Capslock = 0x14,
+    Clear = 0x0C,
+    Return = 0x0D,
+    Escape = 0x1B,
+    Space = 0x20,
+    Prior = 0x21,
+    Next = 0x22,
+    End = 0x23,
+    Home = 0x24,
+    Left = 0x25,
+    Up = 0x26,
+    Right = 0x27,
+    Down = 0x28,
+    Select = 0x29,
+    Print = 0x2A,
+    Execute = 0x2B,
+    Snapshot = 0x2C,
+    Insert = 0x2D,
+    Delete = 0x2E,
+    Help = 0x2F,
     Num0 = 0x30,
     Num1 = 0x31,
     Num2 = 0x32,
@@ -45,27 +70,9 @@ pub enum Key {
     X = 0x58,
     Y = 0x59,
     Z = 0x5A,
-    Back = 0x08,
-    Tab = 0x09,
-    Clear = 0x0C,
-    Return = 0x0D,
-    Escape = 0x1B,
-    Space = 0x20,
-    Prior = 0x21,
-    Next = 0x22,
-    End = 0x23,
-    Home = 0x24,
-    Left = 0x25,
-    Up = 0x26,
-    Right = 0x27,
-    Down = 0x28,
-    Select = 0x29,
-    Print = 0x2A,
-    Execute = 0x2B,
-    Snapshot = 0x2C,
-    Insert = 0x2D,
-    Delete = 0x2E,
-    Help = 0x2F,
+    LWin = 0x5B,
+    RWin = 0x5C,
+    Apps = 0x5D,
     Numpad0 = 0x60,
     Numpad1 = 0x61,
     Numpad2 = 0x62,
@@ -94,13 +101,6 @@ pub enum Key {
     F10 = 0x79,
     F11 = 0x7A,
     F12 = 0x7B,
-    Shift = 0x10,
-    Control = 0x11,
-    Alt = 0x12,
-    Capslock = 0x14,
-    LWin = 0x5B,
-    RWin = 0x5C,
-    Apps = 0x5D,
     Numlock = 0x90,
     Scroll = 0x91,
     LShift = 0xA0,
@@ -109,20 +109,229 @@ pub enum Key {
     RControl = 0xA3,
     LMenu = 0xA4,
     RMenu = 0xA5,
+    Oem1 = 0xBA,
+    OemPlus = 0xBB,
+    OemComma = 0xBC,
+    OemMinus = 0xBD,
+    OemPeriod = 0xBE,
+    Oem2 = 0xBF,
+    Oem3 = 0xC0,
+    Oem4 = 0xDB,
+    Oem5 = 0xDC,
+    Oem6 = 0xDD,
+    Oem7 = 0xDE,
+    Oem8 = 0xDF,
+    Oem102 = 0xE2,
+}
+
+impl Key {
+    pub fn to_string(&self, control: BitFlags<Control>) -> String {
+        let ch = match *self {
+            Key::A => Some("a"),
+            Key::B => Some("b"),
+            Key::C => Some("c"),
+            Key::D => Some("d"),
+            Key::E => Some("e"),
+            Key::F => Some("f"),
+            Key::G => Some("g"),
+            Key::H => Some("h"),
+            Key::I => Some("i"),
+            Key::J => Some("j"),
+            Key::K => Some("k"),
+            Key::L => Some("l"),
+            Key::M => Some("m"),
+            Key::N => Some("n"),
+            Key::O => Some("o"),
+            Key::P => Some("p"),
+            Key::Q => Some("q"),
+            Key::R => Some("r"),
+            Key::S => Some("s"),
+            Key::T => Some("t"),
+            Key::U => Some("u"),
+            Key::V => Some("b"),
+            Key::W => Some("w"),
+            Key::X => Some("x"),
+            Key::Y => Some("y"),
+            Key::Z => Some("z"),
+            Key::Oem1 => Some("ü"),
+            Key::Oem3 => Some("ö"),
+            Key::Oem7 => Some("ä"),
+            _ => None,
+        };
+
+        let is_uppercase = control.contains(Control::Capslock) || control.contains(Control::Shift);
+
+        if let Some(ch) = ch {
+            return if is_uppercase {
+                ch.to_uppercase().to_string()
+            } else {
+                ch.to_string()
+            };
+        }
+
+        match *self {
+            Key::Num0 => {
+                if is_uppercase {
+                    String::from("=")
+                } else if control.contains(Control::RAlt) {
+                    String::from("}")
+                } else {
+                    String::from("0")
+                }
+            },
+            Key::Num1 => {
+                if is_uppercase {
+                    String::from("!")
+                } else {
+                    String::from("1")
+                }
+            },
+            Key::Num2 => {
+                if is_uppercase {
+                    String::from("2")
+                } else {
+                    String::from("\"")
+                }
+            },
+            Key::Num3 => {
+                if is_uppercase {
+                    String::from("§")
+                } else {
+                    String::from("3")
+                }
+            },
+            Key::Num4 => {
+                if is_uppercase {
+                    String::from("$")
+                } else {
+                    String::from("4")
+                }
+            },
+            Key::Num5 => {
+                if is_uppercase {
+                    String::from("%")
+                } else {
+                    String::from("5")
+                }
+            },
+            Key::Num6 => {
+                if is_uppercase {
+                    String::from("&")
+                } else {
+                    String::from("6")
+                }
+            },
+            Key::Num7 => {
+                if is_uppercase {
+                    String::from("/")
+                } else if control.contains(Control::RAlt) {
+                    String::from("{")
+                } else {
+                    String::from("7")
+                }
+            },
+            Key::Num8 => {
+                if is_uppercase {
+                    String::from("(")
+                } else if control.contains(Control::RAlt) {
+                    String::from("[")
+                } else {
+                    String::from("8")
+                }
+            },
+            Key::Num9 => {
+                if is_uppercase {
+                    String::from(")")
+                } else if control.contains(Control::RAlt) {
+                    String::from("]")
+                } else {
+                    String::from("9")
+                }
+            },
+            Key::Numpad0 => String::from("0"),
+            Key::Numpad1 => String::from("1"),
+            Key::Numpad2 => String::from("2"),
+            Key::Numpad3 => String::from("3"),
+            Key::Numpad4 => String::from("4"),
+            Key::Numpad5 => String::from("5"),
+            Key::Numpad6 => String::from("6"),
+            Key::Numpad7 => String::from("7"),
+            Key::Numpad8 => String::from("8"),
+            Key::Numpad9 => String::from("9"),
+            Key::Multiply => String::from("*"),
+            Key::Add => String::from("+"),
+            Key::Subtract => String::from("-"),
+            Key::Divide => String::from("/"),
+            Key::OemPlus => {
+                if is_uppercase {
+                    String::from("*")
+                } else if control.contains(Control::RAlt) {
+                    String::from("~")
+                } else {
+                    String::from("+")
+                }
+            },
+            Key::OemComma => {
+                if is_uppercase {
+                    String::from(";")
+                } else {
+                    String::from(",")
+                }
+            },
+            Key::OemMinus => {
+                if is_uppercase {
+                    String::from("_")
+                } else {
+                    String::from("-")
+                }
+            },
+            Key::OemPeriod => {
+                if is_uppercase {
+                    String::from(":")
+                } else {
+                    String::from(".")
+                }
+            },
+            Key::Oem2 => String::from("#"),
+            Key::Oem5 => String::from("^"),
+            Key::Oem102 => {
+                if is_uppercase {
+                    String::from(">")
+                } else if control.contains(Control::RAlt) {
+                    String::from("|")
+                } else {
+                    String::from("<")
+                }
+            },
+            Key::Space => String::from(" "),
+            Key::Tab => String::from("    "),
+            Key::Oem4 => {
+                if is_uppercase {
+                    String::from("?")
+                } else if control.contains(Control::RAlt) {
+                    String::from("\\")
+                } else {
+                    String::from("ß")
+                }
+            },
+            Key::Oem6 => String::from("´"),
+            _ => String::new(),
+        }
+    }
 }
 
 #[derive(EnumFlags, Copy, Clone, Debug)]
 #[repr(u16)]
 pub enum Control {
-    Capslock = 1,
-    Numlock = 2,
-    Scrolllock = 4,
-    Shift = 8,
-    Enhanced = 16,
-    LAlt = 32,
-    RAlt = 64,
-    LCtrl = 128,
-    RCtrl = 256,
+    Capslock = 0x1,
+    Numlock = 0x2,
+    Scrolllock = 0x4,
+    Shift = 0x8,
+    Enhanced = 0x10,
+    LAlt = 0x20,
+    RAlt = 0x40,
+    LCtrl = 0x80,
+    RCtrl = 0x100,
 }
 
 pub struct InputEvent {

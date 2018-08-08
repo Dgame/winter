@@ -50,11 +50,6 @@ impl View {
         }
     }
 
-    pub fn write_line<T: Into<String>>(&mut self, arg: T) {
-        self.write(arg);
-        self.write("\n");
-    }
-
     pub fn clear_front_buffer(&mut self) {
         self.buffer.clear_front();
         self.seek(0);
