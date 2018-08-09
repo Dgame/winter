@@ -304,7 +304,6 @@ impl Key {
                 }
             },
             Key::Space => String::from(" "),
-            Key::Tab => String::from("    "),
             Key::Oem4 => {
                 if is_uppercase {
                     String::from("?")
