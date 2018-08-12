@@ -127,6 +127,11 @@ impl Terminal {
         self.console.set_cursor_pos(pos);
     }
 
+    pub fn remove_rhs(&mut self) {
+        let pos = self.get_active_view().remove_rhs();
+        self.console.set_cursor_pos(pos);
+    }
+
     pub fn display(&mut self) {
         for view in self.views.iter_mut() {
             view.display(&mut self.console);

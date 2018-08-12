@@ -15,7 +15,7 @@ fn main() {
                 match event.key {
                     Key::Escape => run = false,
                     Key::Return => terminal.newline(),
-                    //                    Key::Delete => terminal.remove_rhs(),
+                    Key::Delete => terminal.remove_rhs(),
                     Key::Left => terminal.move_cursor_lhs(),
                     Key::Right => terminal.move_cursor_rhs(),
                     Key::Back => terminal.remove_lhs(),

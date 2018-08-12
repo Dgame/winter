@@ -98,6 +98,29 @@ impl View {
         self.write_pos
     }
 
+    pub fn remove_rhs(&mut self) -> Position {
+        if self.write_pos.x < self.line_offset {
+            let pos = self.write_pos;
+
+            let line: String = self
+                .buffer
+                .front
+                .iter()
+                .enumerate()
+                .filter(|(i, _)| *i != pos.x)
+                .map(|(_, cell)| cell.ch)
+                .collect();
+
+            self.buffer.clear_front();
+            self.write_pos.x = 0;
+
+            self.write(line);
+            self.write_pos = pos;
+        }
+
+        self.write_pos
+    }
+
     pub fn clear_back_buffer(&mut self) {
         self.buffer.clear_back();
     }
