@@ -76,7 +76,7 @@ impl Drop for Console {
         }
 
         self.clear();
-        self.set_cursor(Position::new(0, 0));
+        self.set_cursor_pos(Position::new(0, 0));
         self.cursor_visible(true);
     }
 }
@@ -134,8 +134,8 @@ impl Console {
         }
 
         let initial_size = Size::new(
-            screen_buffer_info.srWindow.Right - screen_buffer_info.srWindow.Left + 1,
-            screen_buffer_info.srWindow.Bottom - screen_buffer_info.srWindow.Top + 1,
+            (screen_buffer_info.srWindow.Right - screen_buffer_info.srWindow.Left + 1) as usize,
+            (screen_buffer_info.srWindow.Bottom - screen_buffer_info.srWindow.Top + 1) as usize,
         );
 
         unsafe {
@@ -157,8 +157,8 @@ impl Console {
             initial_size,
         };
         console.get_input();
-        console.set_cursor(Position::new(0, 0));
-        console.cursor_visible(false);
+        console.set_cursor_pos(Position::new(0, 0));
+        console.cursor_visible(true);
         console.clear();
 
         console
@@ -172,14 +172,14 @@ impl Console {
             Bottom: 1,
         };
         let new_size = COORD {
-            X: size.width,
-            Y: size.height,
+            X: size.width as i16,
+            Y: size.height as i16,
         };
         let info = SMALL_RECT {
             Left: 0,
             Top: 0,
-            Right: size.width - 1,
-            Bottom: size.height - 1,
+            Right: (size.width - 1) as i16,
+            Bottom: (size.height - 1) as i16,
         };
 
         unsafe {
@@ -213,7 +213,7 @@ impl Console {
         }
     }
 
-    pub fn set_cursor(&mut self, pos: Position) {
+    pub fn set_cursor_pos(&mut self, pos: Position) {
         unsafe {
             GetConsoleScreenBufferInfo(self.output, &mut self.screen_buffer_info);
         }
@@ -221,9 +221,9 @@ impl Console {
         let change = COORD {
             X: min(
                 self.screen_buffer_info.srWindow.Right - self.screen_buffer_info.srWindow.Left + 1,
-                max(0, pos.x),
+                max(0, pos.x as i16),
             ),
-            Y: max(0, pos.y),
+            Y: max(0, pos.y as i16),
         };
 
         stdout().flush().expect("Could not flush");
@@ -237,10 +237,10 @@ impl Console {
         let char_buf_size = COORD { X: 1, Y: 1 };
         let character_pos = COORD { X: 0, Y: 0 };
         let mut write_area = SMALL_RECT {
-            Left: pos.x,
-            Top: pos.y,
-            Right: pos.x,
-            Bottom: pos.y,
+            Left: pos.x as i16,
+            Top: pos.y as i16,
+            Right: pos.x as i16,
+            Bottom: pos.y as i16,
         };
         let mut info: CHAR_INFO_Char = unsafe { zeroed() };
         unsafe {
@@ -275,6 +275,7 @@ impl Console {
             dwSize: 0,
             bVisible: 0,
         };
+
         unsafe {
             GetConsoleCursorInfo(self.output, &mut cci);
         }
@@ -285,11 +286,11 @@ impl Console {
     }
 
     pub fn reposition(&self, pos: Position) {
-        let hwnd_insert_after: HWND = ptr::null_mut();
+        let hwnd: HWND = ptr::null_mut();
         unsafe {
             SetWindowPos(
                 self.handle,
-                hwnd_insert_after,
+                hwnd,
                 pos.x as i32,
                 pos.y as i32,
                 0,
@@ -305,8 +306,10 @@ impl Console {
         }
 
         Size::new(
-            self.screen_buffer_info.srWindow.Right - self.screen_buffer_info.srWindow.Left + 1,
-            self.screen_buffer_info.srWindow.Bottom - self.screen_buffer_info.srWindow.Top + 1,
+            (self.screen_buffer_info.srWindow.Right - self.screen_buffer_info.srWindow.Left + 1)
+                as usize,
+            (self.screen_buffer_info.srWindow.Bottom - self.screen_buffer_info.srWindow.Top + 1)
+                as usize,
         )
     }
 

@@ -44,6 +44,24 @@ impl Terminal {
         }
     }
 
+    pub fn move_cursor_lhs(&mut self) {
+        let mut pos = self.get_active_view().get_write_pos();
+        if pos.x > 0 {
+            pos.x -= 1;
+            self.get_active_view().set_write_pos(pos);
+            self.console.set_cursor_pos(pos);
+        }
+    }
+
+    pub fn move_cursor_rhs(&mut self) {
+        let mut pos = self.get_active_view().get_write_pos();
+        if pos.x < self.get_active_view().get_line_offset() {
+            pos.x += 1;
+            self.get_active_view().set_write_pos(pos);
+            self.console.set_cursor_pos(pos);
+        }
+    }
+
     fn get_active_view(&mut self) -> &mut View {
         self.views.get_mut(self.active).expect("No active View?!")
     }
@@ -94,8 +112,19 @@ impl Terminal {
         inputs
     }
 
+    pub fn newline(&mut self) {
+        let pos = self.get_active_view().newline();
+        self.console.set_cursor_pos(pos);
+    }
+
     pub fn write<S: Into<String>>(&mut self, input: S) {
-        self.get_active_view().write(input);
+        let pos = self.get_active_view().write(input);
+        self.console.set_cursor_pos(pos);
+    }
+
+    pub fn remove_lhs(&mut self) {
+        let pos = self.get_active_view().remove_lhs();
+        self.console.set_cursor_pos(pos);
     }
 
     pub fn display(&mut self) {

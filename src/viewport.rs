@@ -1,5 +1,5 @@
 use basic::Position;
-use basic::{size_t, Size};
+use basic::Size;
 
 pub struct Viewport {
     size: Size,
@@ -39,19 +39,19 @@ impl Viewport {
         self.pos
     }
 
-    pub fn width(&self) -> size_t {
+    pub fn width(&self) -> usize {
         self.size.width
     }
 
-    pub fn height(&self) -> size_t {
+    pub fn height(&self) -> usize {
         self.size.height
     }
 
-    pub fn x(&self) -> size_t {
+    pub fn x(&self) -> usize {
         self.pos.x
     }
 
-    pub fn y(&self) -> size_t {
+    pub fn y(&self) -> usize {
         self.pos.y
     }
 }

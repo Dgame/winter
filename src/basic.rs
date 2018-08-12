@@ -1,14 +1,11 @@
-#[allow(non_camel_case_types)]
-pub type size_t = i16;
-
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct Size {
-    pub width: size_t,
-    pub height: size_t,
+    pub width: usize,
+    pub height: usize,
 }
 
 impl Size {
-    pub fn new(width: size_t, height: size_t) -> Self {
+    pub fn new(width: usize, height: usize) -> Self {
         Self { width, height }
     }
     pub fn empty() -> Self {
@@ -41,17 +38,29 @@ impl Size {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Position {
-    pub x: size_t,
-    pub y: size_t,
+    pub x: usize,
+    pub y: usize,
 }
 
 impl Position {
-    pub fn new(x: size_t, y: size_t) -> Self {
+    pub fn new(x: usize, y: usize) -> Self {
         Self { x, y }
     }
+
     pub fn zero() -> Self {
         Self::new(0, 0)
+    }
+
+    pub fn to_1d(&self, size: Size) -> usize {
+        (self.x + size.width * self.y) as usize
+    }
+
+    pub fn index_to_2d(index: usize, size: Size) -> Self {
+        let x = index % size.width;
+        let y = index / size.width;
+
+        Self::new(x, y)
     }
 }

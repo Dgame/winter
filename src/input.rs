@@ -126,50 +126,218 @@ pub enum Key {
 
 impl Key {
     pub fn to_string(&self, control: BitFlags<Control>) -> String {
-        let ch = match *self {
-            Key::A => Some("a"),
-            Key::B => Some("b"),
-            Key::C => Some("c"),
-            Key::D => Some("d"),
-            Key::E => Some("e"),
-            Key::F => Some("f"),
-            Key::G => Some("g"),
-            Key::H => Some("h"),
-            Key::I => Some("i"),
-            Key::J => Some("j"),
-            Key::K => Some("k"),
-            Key::L => Some("l"),
-            Key::M => Some("m"),
-            Key::N => Some("n"),
-            Key::O => Some("o"),
-            Key::P => Some("p"),
-            Key::Q => Some("q"),
-            Key::R => Some("r"),
-            Key::S => Some("s"),
-            Key::T => Some("t"),
-            Key::U => Some("u"),
-            Key::V => Some("b"),
-            Key::W => Some("w"),
-            Key::X => Some("x"),
-            Key::Y => Some("y"),
-            Key::Z => Some("z"),
-            Key::Oem1 => Some("ü"),
-            Key::Oem3 => Some("ö"),
-            Key::Oem7 => Some("ä"),
-            _ => None,
-        };
-
         let is_uppercase = control.contains(Control::Capslock) || control.contains(Control::Shift);
 
-        if let Some(ch) = ch {
-            return if is_uppercase {
-                ch.to_uppercase().to_string()
-            } else {
-                ch.to_string()
-            };
-        }
-
         match *self {
+            Key::A => {
+                if is_uppercase {
+                    String::from("A")
+                } else {
+                    String::from("a")
+                }
+            }
+            Key::B => {
+                if is_uppercase {
+                    String::from("B")
+                } else {
+                    String::from("b")
+                }
+            }
+            Key::C => {
+                if is_uppercase {
+                    String::from("C")
+                } else {
+                    String::from("c")
+                }
+            }
+            Key::D => {
+                if is_uppercase {
+                    String::from("D")
+                } else {
+                    String::from("d")
+                }
+            }
+            Key::E => {
+                if is_uppercase {
+                    String::from("E")
+                } else if control.contains(Control::RAlt) {
+                    String::from("€")
+                } else {
+                    String::from("e")
+                }
+            }
+            Key::F => {
+                if is_uppercase {
+                    String::from("F")
+                } else {
+                    String::from("f")
+                }
+            }
+            Key::G => {
+                if is_uppercase {
+                    String::from("G")
+                } else {
+                    String::from("g")
+                }
+            }
+            Key::H => {
+                if is_uppercase {
+                    String::from("H")
+                } else {
+                    String::from("h")
+                }
+            }
+            Key::I => {
+                if is_uppercase {
+                    String::from("I")
+                } else {
+                    String::from("i")
+                }
+            }
+            Key::J => {
+                if is_uppercase {
+                    String::from("J")
+                } else {
+                    String::from("j")
+                }
+            }
+            Key::K => {
+                if is_uppercase {
+                    String::from("K")
+                } else {
+                    String::from("k")
+                }
+            }
+            Key::L => {
+                if is_uppercase {
+                    String::from("L")
+                } else {
+                    String::from("l")
+                }
+            }
+            Key::M => {
+                if is_uppercase {
+                    String::from("M")
+                } else if control.contains(Control::RAlt) {
+                    String::from("µ")
+                } else {
+                    String::from("m")
+                }
+            }
+            Key::N => {
+                if is_uppercase {
+                    String::from("N")
+                } else {
+                    String::from("n")
+                }
+            }
+            Key::O => {
+                if is_uppercase {
+                    String::from("O")
+                } else {
+                    String::from("o")
+                }
+            }
+            Key::P => {
+                if is_uppercase {
+                    String::from("P")
+                } else {
+                    String::from("p")
+                }
+            }
+            Key::Q => {
+                if is_uppercase {
+                    String::from("Q")
+                } else if control.contains(Control::RAlt) {
+                    String::from("@")
+                } else {
+                    String::from("q")
+                }
+            }
+            Key::R => {
+                if is_uppercase {
+                    String::from("R")
+                } else {
+                    String::from("r")
+                }
+            }
+            Key::S => {
+                if is_uppercase {
+                    String::from("S")
+                } else {
+                    String::from("s")
+                }
+            }
+            Key::T => {
+                if is_uppercase {
+                    String::from("T")
+                } else {
+                    String::from("t")
+                }
+            }
+            Key::U => {
+                if is_uppercase {
+                    String::from("U")
+                } else {
+                    String::from("u")
+                }
+            }
+            Key::V => {
+                if is_uppercase {
+                    String::from("V")
+                } else {
+                    String::from("v")
+                }
+            }
+            Key::W => {
+                if is_uppercase {
+                    String::from("W")
+                } else {
+                    String::from("w")
+                }
+            }
+            Key::X => {
+                if is_uppercase {
+                    String::from("X")
+                } else {
+                    String::from("x")
+                }
+            }
+            Key::Y => {
+                if is_uppercase {
+                    String::from("Y")
+                } else {
+                    String::from("y")
+                }
+            }
+            Key::Z => {
+                if is_uppercase {
+                    String::from("Z")
+                } else {
+                    String::from("z")
+                }
+            }
+            Key::Oem1 => {
+                if is_uppercase {
+                    String::from("Ü")
+                } else {
+                    String::from("ü")
+                }
+            }
+            Key::Oem3 => {
+                if is_uppercase {
+                    String::from("Ö")
+                } else {
+                    String::from("ö")
+                }
+            }
+            Key::Oem7 => {
+                if is_uppercase {
+                    String::from("Ä")
+                } else {
+                    String::from("ä")
+                }
+            }
             Key::Num0 => {
                 if is_uppercase {
                     String::from("=")
@@ -178,49 +346,49 @@ impl Key {
                 } else {
                     String::from("0")
                 }
-            },
+            }
             Key::Num1 => {
                 if is_uppercase {
                     String::from("!")
                 } else {
                     String::from("1")
                 }
-            },
+            }
             Key::Num2 => {
                 if is_uppercase {
-                    String::from("2")
-                } else {
                     String::from("\"")
+                } else {
+                    String::from("2")
                 }
-            },
+            }
             Key::Num3 => {
                 if is_uppercase {
                     String::from("§")
                 } else {
                     String::from("3")
                 }
-            },
+            }
             Key::Num4 => {
                 if is_uppercase {
                     String::from("$")
                 } else {
                     String::from("4")
                 }
-            },
+            }
             Key::Num5 => {
                 if is_uppercase {
                     String::from("%")
                 } else {
                     String::from("5")
                 }
-            },
+            }
             Key::Num6 => {
                 if is_uppercase {
                     String::from("&")
                 } else {
                     String::from("6")
                 }
-            },
+            }
             Key::Num7 => {
                 if is_uppercase {
                     String::from("/")
@@ -229,7 +397,7 @@ impl Key {
                 } else {
                     String::from("7")
                 }
-            },
+            }
             Key::Num8 => {
                 if is_uppercase {
                     String::from("(")
@@ -238,7 +406,7 @@ impl Key {
                 } else {
                     String::from("8")
                 }
-            },
+            }
             Key::Num9 => {
                 if is_uppercase {
                     String::from(")")
@@ -247,7 +415,7 @@ impl Key {
                 } else {
                     String::from("9")
                 }
-            },
+            }
             Key::Numpad0 => String::from("0"),
             Key::Numpad1 => String::from("1"),
             Key::Numpad2 => String::from("2"),
@@ -270,28 +438,28 @@ impl Key {
                 } else {
                     String::from("+")
                 }
-            },
+            }
             Key::OemComma => {
                 if is_uppercase {
                     String::from(";")
                 } else {
                     String::from(",")
                 }
-            },
+            }
             Key::OemMinus => {
                 if is_uppercase {
                     String::from("_")
                 } else {
                     String::from("-")
                 }
-            },
+            }
             Key::OemPeriod => {
                 if is_uppercase {
                     String::from(":")
                 } else {
                     String::from(".")
                 }
-            },
+            }
             Key::Oem2 => String::from("#"),
             Key::Oem5 => String::from("^"),
             Key::Oem102 => {
@@ -302,7 +470,7 @@ impl Key {
                 } else {
                     String::from("<")
                 }
-            },
+            }
             Key::Space => String::from(" "),
             Key::Oem4 => {
                 if is_uppercase {
@@ -312,7 +480,7 @@ impl Key {
                 } else {
                     String::from("ß")
                 }
-            },
+            }
             Key::Oem6 => String::from("´"),
             _ => String::new(),
         }

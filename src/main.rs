@@ -14,7 +14,11 @@ fn main() {
                 //                println!("Key {:?} was pressed", event.key);
                 match event.key {
                     Key::Escape => run = false,
-                    Key::Return => terminal.write("\n"),
+                    Key::Return => terminal.newline(),
+                    //                    Key::Delete => terminal.remove_rhs(),
+                    Key::Left => terminal.move_cursor_lhs(),
+                    Key::Right => terminal.move_cursor_rhs(),
+                    Key::Back => terminal.remove_lhs(),
                     _ => {
                         let s = event.key.to_string(event.control);
                         if !s.is_empty() {
