@@ -1,155 +1,169 @@
 extern crate winter;
 
 use std::env;
+use std::fs::File;
+use std::io::Write;
 use winter::basic::Coord;
 use winter::basic::Cursor;
-use winter::basic::Offset;
 use winter::basic::Size;
 use winter::basic::Viewport;
 use winter::cell::Cell;
 use winter::console::Console;
 use winter::input::InputEvent;
 use winter::input::Key;
-use std::fs::File;
-use std::io::Write;
 
-#[derive(Clone)]
-struct Line {
-    cursor: Cursor,
-    buffer: Vec<Cell>,
+pub struct DoubleBuffer {
+    pub front: Vec<Cell>,
+    pub back: Vec<Cell>,
 }
 
-impl Line {
-    fn empty() -> Self {
-        Self {
-            cursor: Cursor::empty(),
-            buffer: Vec::new(),
+impl DoubleBuffer {
+    pub fn new(size: Size) -> Self {
+        let cap = size.width * size.height;
+
+        let mut front = Vec::with_capacity(cap);
+        let mut back = Vec::with_capacity(cap);
+
+        while front.len() < front.capacity() {
+            front.push(Cell::default());
+            back.push(Cell::default());
+        }
+
+        Self { front, back }
+    }
+
+    pub fn clear(&mut self) {
+        self.clear_front();
+        self.clear_back();
+    }
+
+    pub fn clear_front(&mut self) {
+        for cell in &mut self.front.iter_mut() {
+            *cell = Cell::default();
         }
     }
 
-    fn with<S: Into<String>>(s: S) -> Self {
-        let s = s.into();
-
-        let mut line = Self::empty();
-        line.write(s);
-
-        line
-    }
-
-    fn write<S: Into<String>>(&mut self, s: S) {
-        for ch in s.into().chars() {
-            self.buffer.push(Cell::plain(ch));
-            self.cursor.move_right();
+    pub fn clear_back(&mut self) {
+        for cell in &mut self.back.iter_mut() {
+            *cell = Cell::default();
         }
     }
-
-    fn del_previous(&mut self) {
-        self.cursor.move_left();
-    }
-
-    fn del_next(&mut self) {
-        self.cursor.move_right();
-    }
 }
 
-struct Drawing {
-    need_update: bool,
-    offset: usize,
-}
-
-impl Drawing {
-    fn new() -> Self {
-        Self {
-            need_update: false,
-            offset: 0
-        }
-    }
-
-    fn cleared(&mut self) {
-        self.need_update = true;
-        self.offset = 0;
-    }
-}
-
-struct Screen {
+pub struct Screen {
     viewport: Viewport,
-    buffer: Vec<Cell>,
-    line: Line,
-    offset_y: usize,
-    drawing: Drawing,
+    buffer: DoubleBuffer,
+    cursor: Cursor,
+    y_offset: usize,
 }
+
+//impl Drop for Screen {
+//    fn drop(&mut self) {
+//        self.buffer.clear();
+//    }
+//}
 
 impl Screen {
-    fn new(viewport: Viewport) -> Self {
+    pub fn new(viewport: Viewport) -> Self {
+        let buffer = DoubleBuffer::new(viewport.size);
+
         Self {
             viewport,
-            buffer: Vec::new(),
-            line: Line::empty(),
-            offset_y: 0,
-            drawing: Drawing::new()
+            buffer,
+            cursor: Cursor::empty(),
+            y_offset: 0,
         }
     }
 
-    fn resize(&mut self, size: Size) {
+    pub fn resize(&mut self, size: Size) {
         self.viewport.size = size;
-        self.drawing.cleared();
+        self.buffer.clear_front();
     }
 
-    fn get_cursor_pos(&self) -> Coord {
-        Coord::new(self.line.cursor.index, self.offset_y)
+    pub fn get_cursor_pos(&self) -> Coord {
+        Coord::new(self.cursor.index(), self.y_offset)
     }
 
-    fn write<S: Into<String>>(&mut self, s: S) -> Coord {
-        self.line.write(s);
+    pub fn write<S: Into<String>>(&mut self, s: S) -> Coord {
+        let mut pos = self.get_cursor_pos();
+        for ch in s.into().chars() {
+            let i = pos.to_1d(self.viewport.size);
+            self.buffer.front[i] = Cell::plain(ch);
+            pos.x += 1;
+            self.cursor.do_move();
+        }
 
         self.get_cursor_pos()
     }
 
-    fn writeln<S: Into<String>>(&mut self, s: S) -> Coord {
+    pub fn writeln<S: Into<String>>(&mut self, s: S) -> Coord {
         self.write(s);
         self.newline();
 
         self.get_cursor_pos()
     }
 
-    fn newline(&mut self) {
-        self.buffer.extend(self.line.buffer.iter());
-        self.offset_y += 1;
-        self.line = Line::with("~ ");
+    pub fn newline(&mut self) -> Coord {
+        self.y_offset += 1;
+        self.cursor = Cursor::new(0, 2);
+        self.write("~ ");
 
-        self.drawing.need_update = true;
+        self.get_cursor_pos()
+    }
+
+    pub fn del_left(&mut self) -> Coord {
+        if self.cursor.can_move_left() {
+            let mut pos = self.get_cursor_pos();
+            pos.x -= 1;
+
+            self.buffer.front[pos.to_1d(self.viewport.size)] = Cell::default();
+            self.cursor.move_left();
+            self.cursor.reduce_offset();
+        }
+
+        self.get_cursor_pos()
+    }
+
+    pub fn del_right(&mut self) -> Coord {
+        if self.cursor.can_move_right() {
+            let mut pos = self.get_cursor_pos();
+            for _ in 0 .. self.cursor.diff() {
+                let i = pos.to_1d(self.viewport.size);
+                self.buffer.front[i] = self.buffer.front[i + 1];
+                pos.x += 1;
+            }
+
+            self.cursor.reduce_offset();
+        }
+
+        self.get_cursor_pos()
     }
 
     fn redraw(&mut self, console: &mut Console) {
-        for cell in self.buffer.iter().skip(self.drawing.offset) {
-            let pos = Coord::index_to_2d(self.drawing.offset, self.viewport.size);
-            console.write_cell(pos, *cell);
-            self.drawing.offset += 1;
-        }
+        for (i, cell) in self.buffer.front.iter().enumerate() {
+            if *cell != self.buffer.back[i] {
+                let mut pos = Coord::index_to_2d(i, self.viewport.size);
+                pos.x += self.viewport.x();
+                pos.y += self.viewport.y();
 
-        self.drawing.need_update = false;
+                console.write_cell(pos, *cell);
+                self.buffer.back[i] = *cell;
+            }
+        }
     }
 
-    fn render(&mut self, console: &mut Console) {
-        if self.drawing.need_update {
-            self.redraw(console);
-        }
-
-        let mut pos = Coord::new(0, self.offset_y);
-        for cell in self.line.buffer.iter() {
-            console.write_cell(pos, *cell);
-            pos.x += 1;
-        }
+    pub fn render(&mut self, console: &mut Console) {
+        self.redraw(console);
     }
 }
 
-struct ScreenManager {
+pub struct ScreenManager {
     screens: Vec<Screen>,
     screen_id: usize,
 }
 
 impl ScreenManager {
-    fn new(size: Size) -> Self {
+    pub fn new(size: Size) -> Self {
         let viewport = Viewport::with(Coord::zero(), size);
         let screen = Screen::new(viewport);
         let mut screens = Vec::with_capacity(4);
@@ -161,15 +175,15 @@ impl ScreenManager {
         }
     }
 
-    fn screen(&self) -> &Screen {
+    pub fn screen(&self) -> &Screen {
         &self.screens[self.screen_id]
     }
 
-    fn screen_mut(&mut self) -> &mut Screen {
+    pub fn screen_mut(&mut self) -> &mut Screen {
         &mut self.screens[self.screen_id]
     }
 
-    fn render(&mut self, console: &mut Console) {
+    pub fn render(&mut self, console: &mut Console) {
         for screen in self.screens.iter_mut() {
             screen.render(console);
         }
@@ -181,7 +195,7 @@ fn get_input_events(console: &mut Console) -> Vec<InputEvent> {
     for input in console.get_input() {
         match input.EventType {
             KEY_EVENT => inputs.push(InputEvent::from(&input)),
-            _ => { }
+            _ => {}
         }
     }
 
@@ -194,7 +208,6 @@ fn main() {
     let path = env::current_dir().unwrap();
     let cursor_pos = manager.screen_mut().writeln(path.to_str().unwrap());
     console.set_cursor_pos(cursor_pos);
-    manager.screen_mut().render(&mut console);
 
     let mut run = true;
     while run {
@@ -203,9 +216,38 @@ fn main() {
                 //                println!("Key {:?} was pressed", event.key);
                 match event.key {
                     Key::Escape => run = false,
-                    _ => {}
+                    Key::Return => {
+                        let cursor_pos = manager.screen_mut().newline();
+                        console.set_cursor_pos(cursor_pos);
+                    }
+                    Key::Back => {
+                        let cursor_pos = manager.screen_mut().del_left();
+                        console.set_cursor_pos(cursor_pos);
+                    }
+                    Key::Delete => {
+                        let cursor_pos = manager.screen_mut().del_right();
+                        console.set_cursor_pos(cursor_pos);
+                    }
+                    Key::Left => {
+                        manager.screen_mut().cursor.move_left();
+                        let cursor_pos = manager.screen_mut().get_cursor_pos();
+                        console.set_cursor_pos(cursor_pos);
+                    }
+                    Key::Right => {
+                        manager.screen_mut().cursor.move_right();
+                        let cursor_pos = manager.screen_mut().get_cursor_pos();
+                        console.set_cursor_pos(cursor_pos);
+                    }
+                    _ => {
+                        let cursor_pos = manager
+                            .screen_mut()
+                            .write(event.key.to_string(event.control));
+                        console.set_cursor_pos(cursor_pos);
+                    }
                 }
             }
         }
+
+        manager.screen_mut().render(&mut console);
     }
 }

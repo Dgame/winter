@@ -12,17 +12,33 @@ impl Size {
 
 #[derive(Debug, Clone)]
 pub struct Viewport {
-    pub coord: Coord,
+    pub pos: Coord,
     pub size: Size,
 }
 
 impl Viewport {
     pub fn with(coord: Coord, size: Size) -> Self {
-        Self { coord, size }
+        Self { pos: coord, size }
     }
 
     pub fn new(x: usize, y: usize, w: usize, h: usize) -> Self {
         Self::with(Coord::new(x, y), Size::new(w, h))
+    }
+
+    pub fn width(&self) -> usize {
+        self.size.width
+    }
+
+    pub fn height(&self) -> usize {
+        self.size.height
+    }
+
+    pub fn x(&self) -> usize {
+        self.pos.x
+    }
+
+    pub fn y(&self) -> usize {
+        self.pos.y
     }
 }
 
@@ -54,46 +70,58 @@ impl Coord {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Offset {
-    pub start: usize,
-    pub end: usize,
-}
-
-impl Offset {
-    pub fn new(start: usize) -> Self {
-        Self { start, end: 0 }
-    }
-
-    pub fn empty() -> Self {
-        Self::new(0)
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
 pub struct Cursor {
-    pub index: usize,
-    pub offset: Offset,
+    index: usize,
+    gap: usize,
+    offset: usize,
 }
 
 impl Cursor {
-    pub fn new(offset: Offset) -> Self {
+    pub fn new(index: usize, gap: usize) -> Self {
         Self {
-            index: offset.start,
-            offset,
+            index,
+            gap,
+            offset: 0,
         }
     }
 
     pub fn empty() -> Self {
-        Self::new(Offset::empty())
+        Self::new(0, 0)
+    }
+
+    pub fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn diff(&self) -> usize {
+        self.offset - self.index
+    }
+
+    pub fn reduce_offset(&mut self) {
+        self.offset -= 1;
+    }
+
+    pub fn can_move_right(&self) -> bool {
+        self.index < self.offset
+    }
+
+    pub fn do_move(&mut self) {
+        self.index += 1;
+        self.offset += 1;
     }
 
     pub fn move_right(&mut self) {
-        self.index += 1;
-        self.offset.end += 1;
+        if self.can_move_right() {
+            self.index += 1;
+        }
+    }
+
+    pub fn can_move_left(&self) -> bool {
+        self.index > self.gap
     }
 
     pub fn move_left(&mut self) {
-        if self.index > self.offset.start {
+        if self.can_move_left() {
             self.index -= 1;
         }
     }
