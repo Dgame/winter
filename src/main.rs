@@ -193,8 +193,6 @@ fn main() {
     let mut manager = ScreenManager::new(Size::new(50, 25));
     let path = env::current_dir().unwrap();
     let cursor_pos = manager.screen_mut().writeln(path.to_str().unwrap());
-    let mut f = File::create("test.txt").unwrap();
-    f.write(format!("Pos: {:?}", cursor_pos).as_bytes());
     console.set_cursor_pos(cursor_pos);
     manager.screen_mut().render(&mut console);
 
