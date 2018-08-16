@@ -1,4 +1,4 @@
-use basic::{Position, Size};
+use basic::{Coord, Size};
 use cell::{Cell, DEFAULT_CH};
 use std::cmp::{max, min};
 use std::ffi::CString;
@@ -75,8 +75,6 @@ impl Drop for Console {
             SetConsoleScreenBufferSize(self.output, self.screen_buffer_info.dwSize);
         }
 
-        self.clear();
-        self.set_cursor_pos(Position::new(0, 0));
         self.cursor_visible(true);
     }
 }
@@ -157,7 +155,7 @@ impl Console {
             initial_size,
         };
         console.get_input();
-        console.set_cursor_pos(Position::new(0, 0));
+        console.set_cursor_pos(Coord::zero());
         console.cursor_visible(true);
         console.clear();
 
@@ -192,8 +190,8 @@ impl Console {
     pub fn clear(&self) {
         let coord_screen = COORD { X: 0, Y: 0 };
         let mut chars_written: DWORD = 0;
-        let cell_count =
-            self.screen_buffer_info.dwSize.X as usize * self.screen_buffer_info.dwSize.Y as usize;
+        let cell_count = (self.screen_buffer_info.dwSize.X as usize)
+            * (self.screen_buffer_info.dwSize.Y as usize);
 
         unsafe {
             FillConsoleOutputCharacterA(
@@ -213,7 +211,7 @@ impl Console {
         }
     }
 
-    pub fn set_cursor_pos(&mut self, pos: Position) {
+    pub fn set_cursor_pos(&mut self, coord: Coord) {
         unsafe {
             GetConsoleScreenBufferInfo(self.output, &mut self.screen_buffer_info);
         }
@@ -221,9 +219,9 @@ impl Console {
         let change = COORD {
             X: min(
                 self.screen_buffer_info.srWindow.Right - self.screen_buffer_info.srWindow.Left + 1,
-                max(0, pos.x as i16),
+                max(0, coord.x as i16),
             ),
-            Y: max(0, pos.y as i16),
+            Y: max(0, coord.y as i16),
         };
 
         stdout().flush().expect("Could not flush");
@@ -233,14 +231,14 @@ impl Console {
         }
     }
 
-    pub fn write_cell(&self, pos: Position, cell: Cell) {
+    pub fn write_cell(&self, coord: Coord, cell: Cell) {
         let char_buf_size = COORD { X: 1, Y: 1 };
         let character_pos = COORD { X: 0, Y: 0 };
         let mut write_area = SMALL_RECT {
-            Left: pos.x as i16,
-            Top: pos.y as i16,
-            Right: pos.x as i16,
-            Bottom: pos.y as i16,
+            Left: coord.x as i16,
+            Top: coord.y as i16,
+            Right: coord.x as i16,
+            Bottom: coord.y as i16,
         };
         let mut info: CHAR_INFO_Char = unsafe { zeroed() };
         unsafe {
@@ -285,14 +283,14 @@ impl Console {
         }
     }
 
-    pub fn reposition(&self, pos: Position) {
+    pub fn reposition(&self, coord: Coord) {
         let hwnd: HWND = ptr::null_mut();
         unsafe {
             SetWindowPos(
                 self.handle,
                 hwnd,
-                pos.x as i32,
-                pos.y as i32,
+                coord.x as i32,
+                coord.y as i32,
                 0,
                 0,
                 SWP_NOZORDER | SWP_NOSIZE,

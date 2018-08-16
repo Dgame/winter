@@ -1,5 +1,4 @@
-use color::Color;
-use color::{into_bg_attributes, into_fg_attributes};
+use color::{into_bg_attributes, into_fg_attributes, Color};
 
 pub const DEFAULT_CH: char = ' ';
 
