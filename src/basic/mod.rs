@@ -109,6 +109,10 @@ impl Cursor {
         self.start
     }
 
+    pub fn offset(&self) -> usize {
+        self.offset
+    }
+
     pub fn diff(&self) -> usize {
         self.offset - self.index
     }
@@ -152,4 +156,9 @@ impl Cursor {
             self.index -= 1;
         }
     }
+}
+
+pub struct Range {
+    start: usize,
+    end: usize
 }

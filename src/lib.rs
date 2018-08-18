@@ -10,8 +10,8 @@ extern crate num_traits;
 extern crate enumflags_derive;
 
 pub mod basic;
-pub mod buffer;
 pub mod cell;
 pub mod color;
 pub mod console;
 pub mod input;
+pub mod screen;
