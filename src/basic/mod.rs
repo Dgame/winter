@@ -12,8 +12,8 @@ impl Size {
 
 #[derive(Debug, Clone)]
 pub struct Viewport {
-    pub pos: Coord,
-    pub size: Size,
+    pos: Coord,
+    size: Size,
 }
 
 impl Viewport {
@@ -23,6 +23,18 @@ impl Viewport {
 
     pub fn new(x: usize, y: usize, w: usize, h: usize) -> Self {
         Self::with(Coord::new(x, y), Size::new(w, h))
+    }
+
+    pub fn pos(&self) -> Coord {
+        self.pos
+    }
+
+    pub fn size(&self) -> Size {
+        self.size
+    }
+
+    pub fn resize(&mut self, size: Size) {
+        self.size = size;
     }
 
     pub fn width(&self) -> usize {
@@ -72,15 +84,15 @@ impl Coord {
 #[derive(Debug, Clone, Copy)]
 pub struct Cursor {
     index: usize,
-    gap: usize,
+    start: usize,
     offset: usize,
 }
 
 impl Cursor {
-    pub fn new(index: usize, gap: usize) -> Self {
+    pub fn new(index: usize, start: usize) -> Self {
         Self {
             index,
-            gap,
+            start,
             offset: 0,
         }
     }
@@ -93,19 +105,34 @@ impl Cursor {
         self.index
     }
 
+    pub fn start(&self) -> usize {
+        self.start
+    }
+
     pub fn diff(&self) -> usize {
         self.offset - self.index
     }
 
+    pub fn at_end(&mut self) -> bool {
+        self.offset <= self.index
+    }
+
     pub fn reduce_offset(&mut self) {
-        self.offset -= 1;
+        if self.offset > self.index {
+            self.offset -= 1;
+        }
+    }
+
+    pub fn move_back(&mut self) {
+        self.move_left();
+        self.reduce_offset();
     }
 
     pub fn can_move_right(&self) -> bool {
         self.index < self.offset
     }
 
-    pub fn do_move(&mut self) {
+    pub fn move_ahead(&mut self) {
         self.index += 1;
         self.offset += 1;
     }
@@ -117,7 +144,7 @@ impl Cursor {
     }
 
     pub fn can_move_left(&self) -> bool {
-        self.index > self.gap
+        self.index > self.start
     }
 
     pub fn move_left(&mut self) {
