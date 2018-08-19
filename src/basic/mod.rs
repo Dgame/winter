@@ -86,7 +86,7 @@ pub struct Cursor {
     index: usize,
     start: usize,
     offset: usize,
-}
+} // TODO: y_offset mit aufnehmen? Bzw. Coord(index, y_offset)
 
 impl Cursor {
     pub fn new(index: usize, start: usize) -> Self {
@@ -156,9 +156,4 @@ impl Cursor {
             self.index -= 1;
         }
     }
-}
-
-pub struct Range {
-    start: usize,
-    end: usize,
 }

@@ -22,6 +22,8 @@ use winapi::um::wincon::{
 };
 use winapi::um::winnt::HANDLE;
 use winapi::um::winuser::{SetWindowPos, SWP_NOSIZE, SWP_NOZORDER};
+use winapi::um::processenv::GetCurrentDirectoryW;
+use winapi::um::processenv::SetCurrentDirectoryA;
 
 trait Empty {
     fn empty() -> Self;
@@ -347,4 +349,19 @@ impl Console {
 
         records
     }
+
+    pub fn get_dir(&self) -> String {
+        let mut buffer  = [u16::default(); 128];
+        let read = unsafe { GetCurrentDirectoryW(128, buffer.as_mut_ptr()) };
+        assert!(read > 0 && buffer.len() > read as usize);
+
+        String::from_utf16_lossy(&buffer).to_string()
+    }
+
+    pub fn set_dir(&self, dir: &str) {
+        let cstr = CString::new(dir).unwrap();
+        let ret = unsafe { SetCurrentDirectoryA(cstr.as_ptr()) };
+        assert_ne!(ret, 0);
+    }
 }
+

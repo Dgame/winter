@@ -65,25 +65,20 @@ impl Screen {
         self.line.get_cursor_pos()
     }
 
-    pub fn writeln<S: Into<String>>(&mut self, s: S) -> (Coord, String) {
-        self.write(s);
-        self.newline()
-    }
-
-    pub fn newline(&mut self) -> (Coord, String) {
+    pub fn newline(&mut self, gap: usize) -> (Coord, String) {
         let input: String = self.line.get();
 
         self.y_offset += 1;
+
         let offset = Coord::new(0, self.y_offset).to_1d(self.viewport.size());
         let length = self.front.length();
 
         self.line = Line::new(
             self.y_offset,
-            Cursor::new(0, 2),
+            Cursor::new(0, gap),
             self.viewport.size(),
             MutSlice::from_slice(self.front.mut_slice(offset), length),
         );
-        self.write("~ ");
 
         (self.line.get_cursor_pos(), input)
     }

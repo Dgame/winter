@@ -5,7 +5,7 @@ use memory::MutSlice;
 pub struct Line {
     y_offset: usize,
     cursor: Cursor,
-    size: Size,
+    size: Size, // TODO: Auslagern
     buffer: MutSlice<Cell>,
 }
 
@@ -39,6 +39,7 @@ impl Line {
         Coord::new(self.cursor.index(), self.y_offset)
     }
 
+    // TODO: Auslagern
     pub fn get_current_index(&self) -> usize {
         self.get_cursor_pos().to_1d(self.size)
     }
@@ -47,7 +48,8 @@ impl Line {
         let index = self.cursor.start();
         let length = self.cursor.offset();
 
-        let s: String = self.buffer
+        let s: String = self
+            .buffer
             .to_slice()
             .iter()
             .skip(index)

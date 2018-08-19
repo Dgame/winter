@@ -1,7 +1,5 @@
 extern crate winter;
 
-use std::env;
-use std::process::Command;
 use winter::basic::Size;
 use winter::console::Console;
 use winter::input::InputEvent;
@@ -22,8 +20,9 @@ fn get_input_events(console: &mut Console) -> Vec<InputEvent> {
 fn main() {
     let mut console = Console::new();
     let mut manager = ScreenManager::new(Size::new(50, 25));
-    let path = env::current_dir().unwrap();
-    let (cursor_pos, _) = manager.screen_mut().writeln(path.to_str().unwrap());
+    manager.screen_mut().write(console.get_dir());
+    manager.screen_mut().newline(2);
+    let cursor_pos = manager.screen_mut().write("~ ");
     console.set_cursor_pos(cursor_pos);
 
     let mut run = true;
@@ -34,19 +33,16 @@ fn main() {
                 match event.key {
                     Key::Escape => run = false,
                     Key::Return => {
-                        let (cursor_pos, input) = manager.screen_mut().newline();
+                        let (_, input) = manager.screen_mut().newline(0);
+                        manager.screen_mut().write(console.get_dir());
+                        manager.screen_mut().newline(2);
+                        let cursor_pos = manager.screen_mut().write("~ ");
                         console.set_cursor_pos(cursor_pos);
-
-                        let args: Vec<&str> = input.split_whitespace().collect();
-                        println!("{:?}", args);
-
-                        //                        let (cursor_pos, _) = match Command::new("cd").args([".."].iter()).output() {
-                        //                            Ok(output) => {
-                        //                                manager.screen_mut().writeln(String::from_utf8(output.stdout).unwrap())
-                        //                            },
-                        //                            Err(e) => manager.screen_mut().writeln(e.to_string()),
-                        //                        };
-                        console.set_cursor_pos(cursor_pos);
+//                        println!("Input {}", input);
+                        //if input == "cd" {
+                            console.set_dir("..");
+//                            println!(" Output {}", console.get_dir());
+                        //}
                     }
                     Key::Back => {
                         let cursor_pos = manager.screen_mut().line_mut().del_left();
