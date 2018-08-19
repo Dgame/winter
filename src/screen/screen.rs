@@ -1,6 +1,7 @@
 use basic::{Coord, Cursor, Size, Viewport};
 use cell::Cell;
 use console::Console;
+use memory::MutSlice;
 use screen::{Buffer, Line};
 
 pub struct Screen {
@@ -21,11 +22,16 @@ impl Screen {
     pub fn new(viewport: Viewport) -> Self {
         let size = viewport.size();
 
+        let mut front = Buffer::new(size);
+        let back = Buffer::new(size);
+        let length = front.length();
+        let line = Line::first(size, MutSlice::from_slice(front.mut_slice(0), length));
+
         Self {
             viewport,
-            front: Buffer::new(size),
-            back: Buffer::new(size),
-            line: Line::first(size),
+            front,
+            back,
+            line,
             y_offset: 0,
         }
     }
@@ -45,12 +51,11 @@ impl Screen {
     }
 
     pub fn write<S: Into<String>>(&mut self, s: S) -> Coord {
-        let mut i = self.line.get_current_index();
-
         if !self.line.cursor().at_end() {
-            self.front.shift_front(i);
+            self.line.shift_front();
         }
 
+        let mut i = self.line.get_current_index();
         for ch in s.into().chars() {
             self.front.write(i, Cell::plain(ch));
             i += 1;
@@ -66,33 +71,21 @@ impl Screen {
     }
 
     pub fn newline(&mut self) -> (Coord, String) {
-        let input: String = self.line.get(&self.front);
+        let input: String = self.line.get();
 
         self.y_offset += 1;
-        self.line = Line::new(self.y_offset, Cursor::new(0, 2), self.viewport.size());
+        let offset = Coord::new(0, self.y_offset).to_1d(self.viewport.size());
+        let length = self.front.length();
+
+        self.line = Line::new(
+            self.y_offset,
+            Cursor::new(0, 2),
+            self.viewport.size(),
+            MutSlice::from_slice(self.front.mut_slice(offset), length),
+        );
         self.write("~ ");
 
         (self.line.get_cursor_pos(), input)
-    }
-
-    pub fn del_left(&mut self) -> Coord {
-        if self.line.cursor().can_move_left() {
-            self.line.cursor_mut().move_back();
-            let i = self.line.get_current_index();
-            self.front.shift_back(i);
-        }
-
-        self.line.get_cursor_pos()
-    }
-
-    pub fn del_right(&mut self) -> Coord {
-        if self.line.cursor().can_move_right() {
-            let i = self.line.get_current_index();
-            self.front.shift_back(i);
-            self.line.cursor_mut().reduce_offset();
-        }
-
-        self.line.get_cursor_pos()
     }
 
     pub fn render(&mut self, console: &mut Console) {

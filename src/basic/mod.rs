@@ -160,5 +160,5 @@ impl Cursor {
 
 pub struct Range {
     start: usize,
-    end: usize
+    end: usize,
 }

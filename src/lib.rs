@@ -14,4 +14,5 @@ pub mod cell;
 pub mod color;
 pub mod console;
 pub mod input;
+pub mod memory;
 pub mod screen;

@@ -2,11 +2,11 @@ extern crate winter;
 
 use std::env;
 use std::process::Command;
+use winter::basic::Size;
 use winter::console::Console;
 use winter::input::InputEvent;
 use winter::input::Key;
 use winter::screen::ScreenManager;
-use winter::basic::Size;
 
 fn get_input_events(console: &mut Console) -> Vec<InputEvent> {
     let mut inputs = Vec::new();
@@ -49,11 +49,11 @@ fn main() {
                         console.set_cursor_pos(cursor_pos);
                     }
                     Key::Back => {
-                        let cursor_pos = manager.screen_mut().del_left();
+                        let cursor_pos = manager.screen_mut().line_mut().del_left();
                         console.set_cursor_pos(cursor_pos);
                     }
                     Key::Delete => {
-                        let cursor_pos = manager.screen_mut().del_right();
+                        let cursor_pos = manager.screen_mut().line_mut().del_right();
                         console.set_cursor_pos(cursor_pos);
                     }
                     Key::Left => {
