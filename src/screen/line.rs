@@ -45,8 +45,8 @@ impl Line {
     }
 
     pub fn get(&self) -> String {
-        let index = self.cursor.start();
-        let length = self.cursor.offset();
+        let index = self.cursor.nearest();
+        let length = self.cursor.farthest();
 
         let s: String = self
             .buffer
@@ -80,7 +80,7 @@ impl Line {
 
     pub fn shift_back(&mut self) {
         let index = self.cursor.index();
-        let length = self.cursor.offset();
+        let length = self.cursor.farthest();
 
         let cells: Vec<Cell> = self
             .buffer
@@ -100,7 +100,7 @@ impl Line {
 
     pub fn shift_front(&mut self) {
         let index = self.cursor.index();
-        let length = self.cursor.offset();
+        let length = self.cursor.farthest();
 
         let cells: Vec<Cell> = self
             .buffer

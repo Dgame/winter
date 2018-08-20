@@ -84,16 +84,16 @@ impl Coord {
 #[derive(Debug, Clone, Copy)]
 pub struct Cursor {
     index: usize,
-    start: usize,
-    offset: usize,
+    nearest: usize,
+    farthest: usize,
 } // TODO: y_offset mit aufnehmen? Bzw. Coord(index, y_offset)
 
 impl Cursor {
-    pub fn new(index: usize, start: usize) -> Self {
+    pub fn new(index: usize, nearest: usize) -> Self {
         Self {
             index,
-            start,
-            offset: 0,
+            nearest,
+            farthest: 0,
         }
     }
 
@@ -105,25 +105,25 @@ impl Cursor {
         self.index
     }
 
-    pub fn start(&self) -> usize {
-        self.start
+    pub fn nearest(&self) -> usize {
+        self.nearest
     }
 
-    pub fn offset(&self) -> usize {
-        self.offset
+    pub fn farthest(&self) -> usize {
+        self.farthest
     }
 
     pub fn diff(&self) -> usize {
-        self.offset - self.index
+        self.farthest - self.index
     }
 
     pub fn at_end(&mut self) -> bool {
-        self.offset <= self.index
+        self.farthest <= self.index
     }
 
     pub fn reduce_offset(&mut self) {
-        if self.offset > self.index {
-            self.offset -= 1;
+        if self.farthest > self.index {
+            self.farthest -= 1;
         }
     }
 
@@ -133,12 +133,12 @@ impl Cursor {
     }
 
     pub fn can_move_right(&self) -> bool {
-        self.index < self.offset
+        self.index < self.farthest
     }
 
     pub fn move_ahead(&mut self) {
         self.index += 1;
-        self.offset += 1;
+        self.farthest += 1;
     }
 
     pub fn move_right(&mut self) {
@@ -148,7 +148,7 @@ impl Cursor {
     }
 
     pub fn can_move_left(&self) -> bool {
-        self.index > self.start
+        self.index > self.nearest
     }
 
     pub fn move_left(&mut self) {
