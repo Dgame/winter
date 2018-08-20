@@ -3,7 +3,6 @@ use memory::MutSlice;
 use cli::Cell;
 
 pub struct Line {
-    y_offset: usize,
     cursor: Cursor,
     size: Size, // TODO: Auslagern
     buffer: MutSlice<Cell>,
@@ -11,16 +10,11 @@ pub struct Line {
 
 impl Line {
     pub fn first(size: Size, buffer: MutSlice<Cell>) -> Self {
-        Self::new(0, Cursor::empty(), size, buffer)
+        Self::new(Cursor::empty(), size, buffer)
     }
 
-    pub fn new(y_offset: usize, cursor: Cursor, size: Size, buffer: MutSlice<Cell>) -> Self {
-        Self {
-            y_offset,
-            cursor,
-            size,
-            buffer,
-        }
+    pub fn new(cursor: Cursor, size: Size, buffer: MutSlice<Cell>) -> Self {
+        Self { cursor, size, buffer }
     }
 
     pub fn resize(&mut self, size: Size) {
@@ -36,7 +30,7 @@ impl Line {
     }
 
     pub fn get_cursor_pos(&self) -> Coord {
-        Coord::new(self.cursor.index(), self.y_offset)
+        self.cursor.pos()
     }
 
     // TODO: Auslagern
@@ -45,15 +39,15 @@ impl Line {
     }
 
     pub fn get(&self) -> String {
-        let index = self.cursor.nearest();
-        let length = self.cursor.farthest();
+        let nearest = self.cursor.nearest();
+        let farthest = self.cursor.farthest();
 
         let s: String = self
             .buffer
             .to_slice()
             .iter()
-            .skip(index)
-            .take(length)
+            .skip(nearest)
+            .take(farthest)
             .map(|cell| cell.ch)
             .collect();
 
@@ -79,7 +73,7 @@ impl Line {
     }
 
     pub fn shift_back(&mut self) {
-        let index = self.cursor.index();
+        let index = self.cursor.pos().x;
         let length = self.cursor.farthest();
 
         let cells: Vec<Cell> = self
@@ -99,7 +93,7 @@ impl Line {
     }
 
     pub fn shift_front(&mut self) {
-        let index = self.cursor.index();
+        let index = self.cursor.pos().x;
         let length = self.cursor.farthest();
 
         let cells: Vec<Cell> = self

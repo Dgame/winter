@@ -8,7 +8,7 @@ pub struct Screen {
     front: Buffer,
     back: Buffer,
     line: Line,
-    y_offset: usize,
+    top: usize,
 }
 
 //impl Drop for Screen {
@@ -31,7 +31,7 @@ impl Screen {
             front,
             back,
             line,
-            y_offset: 0,
+            top: 0,
         }
     }
 
@@ -58,7 +58,7 @@ impl Screen {
         for ch in s.into().chars() {
             self.front.write(i, Cell::plain(ch));
             i += 1;
-            self.line.cursor_mut().move_ahead();
+            self.line.cursor_mut().move_front();
         }
 
         self.line.get_cursor_pos()
@@ -67,14 +67,13 @@ impl Screen {
     pub fn newline(&mut self, gap: usize) -> (Coord, String) {
         let input: String = self.line.get();
 
-        self.y_offset += 1;
+        self.top += 1;
 
-        let offset = Coord::new(0, self.y_offset).to_1d(self.viewport.size());
+        let offset = Coord::new(0, self.top).to_1d(self.viewport.size());
         let length = self.front.length();
 
         self.line = Line::new(
-            self.y_offset,
-            Cursor::new(0, gap),
+            Cursor::new(Coord::new(0, self.top), gap),
             self.viewport.size(),
             MutSlice::from_slice(self.front.mut_slice(offset), length),
         );
