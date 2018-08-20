@@ -9,12 +9,7 @@ extern crate num_traits;
 #[macro_use]
 extern crate enumflags_derive;
 
-mod basic;
-mod buffer;
-mod cell;
-mod color;
-mod console;
-pub mod input;
-pub mod terminal;
-mod view;
-mod viewport;
+pub mod basic;
+pub mod cli;
+pub mod memory;
+pub mod screen;

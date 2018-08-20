@@ -1,5 +1,4 @@
-use color::Color;
-use color::{into_bg_attributes, into_fg_attributes};
+use cli::Color;
 
 pub const DEFAULT_CH: char = ' ';
 
@@ -38,7 +37,7 @@ impl Cell {
     }
 
     pub fn get_color_attributes(&self) -> u16 {
-        into_fg_attributes(self.fg) | into_bg_attributes(self.bg)
+        self.fg.fg_attributes() | self.bg.bg_attributes()
     }
 
     pub fn is_empty(&self) -> bool {
