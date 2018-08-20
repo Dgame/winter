@@ -1,9 +1,7 @@
 extern crate winter;
 
 use winter::basic::Size;
-use winter::console::Console;
-use winter::input::InputEvent;
-use winter::input::Key;
+use winter::cli::{Console, InputEvent, Key};
 use winter::screen::ScreenManager;
 
 fn get_input_events(console: &mut Console) -> Vec<InputEvent> {
@@ -38,10 +36,10 @@ fn main() {
                         manager.screen_mut().newline(2);
                         let cursor_pos = manager.screen_mut().write("~ ");
                         console.set_cursor_pos(cursor_pos);
-//                        println!("Input {}", input);
+                        //                        println!("Input {}", input);
                         //if input == "cd" {
-                            console.set_dir("..");
-//                            println!(" Output {}", console.get_dir());
+                        console.set_dir("..");
+                        //                            println!(" Output {}", console.get_dir());
                         //}
                     }
                     Key::Back => {

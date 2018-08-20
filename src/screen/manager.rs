@@ -1,6 +1,6 @@
 use basic::{Coord, Size, Viewport};
-use console::Console;
 use screen::Screen;
+use cli::Console;
 
 pub struct ScreenManager {
     screens: Vec<Screen>,

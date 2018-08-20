@@ -1,6 +1,5 @@
 use basic::{Coord, Cursor, Size, Viewport};
-use cell::Cell;
-use console::Console;
+use cli::{Cell, Console};
 use memory::MutSlice;
 use screen::{Buffer, Line};
 

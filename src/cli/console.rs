@@ -1,5 +1,4 @@
 use basic::{Coord, Size};
-use cell::{Cell, DEFAULT_CH};
 use std::cmp::{max, min};
 use std::ffi::CString;
 use std::io::{stdout, Write};
@@ -7,11 +6,12 @@ use std::mem::zeroed;
 use std::ptr;
 use winapi::shared::minwindef::DWORD;
 use winapi::shared::windef::HWND;
-use winapi::um::consoleapi::ReadConsoleInputA;
-use winapi::um::consoleapi::{GetConsoleMode, GetNumberOfConsoleInputEvents, SetConsoleMode};
+use winapi::um::consoleapi::{
+    GetConsoleMode, GetNumberOfConsoleInputEvents, ReadConsoleInputA, SetConsoleMode,
+};
 use winapi::um::errhandlingapi::GetLastError;
 use winapi::um::handleapi::INVALID_HANDLE_VALUE;
-use winapi::um::processenv::GetStdHandle;
+use winapi::um::processenv::{GetCurrentDirectoryW, GetStdHandle, SetCurrentDirectoryA};
 use winapi::um::winbase::{STD_INPUT_HANDLE, STD_OUTPUT_HANDLE};
 use winapi::um::wincon::{
     CHAR_INFO_Char, FillConsoleOutputAttribute, FillConsoleOutputCharacterA, GetConsoleCursorInfo,
@@ -22,8 +22,8 @@ use winapi::um::wincon::{
 };
 use winapi::um::winnt::HANDLE;
 use winapi::um::winuser::{SetWindowPos, SWP_NOSIZE, SWP_NOZORDER};
-use winapi::um::processenv::GetCurrentDirectoryW;
-use winapi::um::processenv::SetCurrentDirectoryA;
+use cli::cell::DEFAULT_CH;
+use cli::Cell;
 
 trait Empty {
     fn empty() -> Self;
@@ -351,7 +351,7 @@ impl Console {
     }
 
     pub fn get_dir(&self) -> String {
-        let mut buffer  = [u16::default(); 128];
+        let mut buffer = [u16::default(); 128];
         let read = unsafe { GetCurrentDirectoryW(128, buffer.as_mut_ptr()) };
         assert!(read > 0 && buffer.len() > read as usize);
 
@@ -364,4 +364,3 @@ impl Console {
         assert_ne!(ret, 0);
     }
 }
-

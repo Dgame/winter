@@ -1,6 +1,6 @@
 use basic::{Coord, Cursor, Size};
-use cell::Cell;
 use memory::MutSlice;
+use cli::Cell;
 
 pub struct Line {
     y_offset: usize,
