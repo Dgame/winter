@@ -43,21 +43,23 @@ fn main() {
                         //}
                     }
                     Key::Back => {
-                        let cursor_pos = manager.screen_mut().line_mut().del_left();
+                        manager.screen_mut().line_mut().del_left();
+                        let cursor_pos = manager.screen().line().cursor().pos();
                         console.set_cursor_pos(cursor_pos);
                     }
                     Key::Delete => {
-                        let cursor_pos = manager.screen_mut().line_mut().del_right();
+                        manager.screen_mut().line_mut().del_right();
+                        let cursor_pos = manager.screen().line().cursor().pos();
                         console.set_cursor_pos(cursor_pos);
                     }
                     Key::Left => {
                         manager.screen_mut().line_mut().cursor_mut().move_left();
-                        let cursor_pos = manager.screen_mut().line().get_cursor_pos();
+                        let cursor_pos = manager.screen().line().cursor().pos();
                         console.set_cursor_pos(cursor_pos);
                     }
                     Key::Right => {
                         manager.screen_mut().line_mut().cursor_mut().move_right();
-                        let cursor_pos = manager.screen_mut().line().get_cursor_pos();
+                        let cursor_pos = manager.screen().line().cursor().pos();;
                         console.set_cursor_pos(cursor_pos);
                     }
                     _ => {

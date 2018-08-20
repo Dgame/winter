@@ -1,24 +1,19 @@
-use basic::{Coord, Cursor, Size};
+use basic::Cursor;
 use memory::MutSlice;
 use cli::Cell;
 
 pub struct Line {
     cursor: Cursor,
-    size: Size, // TODO: Auslagern
     buffer: MutSlice<Cell>,
 }
 
 impl Line {
-    pub fn first(size: Size, buffer: MutSlice<Cell>) -> Self {
-        Self::new(Cursor::empty(), size, buffer)
+    pub fn first(buffer: MutSlice<Cell>) -> Self {
+        Self::new(Cursor::empty(), buffer)
     }
 
-    pub fn new(cursor: Cursor, size: Size, buffer: MutSlice<Cell>) -> Self {
-        Self { cursor, size, buffer }
-    }
-
-    pub fn resize(&mut self, size: Size) {
-        self.size = size;
+    pub fn new(cursor: Cursor, buffer: MutSlice<Cell>) -> Self {
+        Self { cursor, buffer }
     }
 
     pub fn cursor(&self) -> Cursor {
@@ -27,15 +22,6 @@ impl Line {
 
     pub fn cursor_mut(&mut self) -> &mut Cursor {
         &mut self.cursor
-    }
-
-    pub fn get_cursor_pos(&self) -> Coord {
-        self.cursor.pos()
-    }
-
-    // TODO: Auslagern
-    pub fn get_current_index(&self) -> usize {
-        self.get_cursor_pos().to_1d(self.size)
     }
 
     pub fn get(&self) -> String {
@@ -54,22 +40,18 @@ impl Line {
         s.trim().to_string()
     }
 
-    pub fn del_left(&mut self) -> Coord {
+    pub fn del_left(&mut self) {
         if self.cursor.can_move_left() {
             self.cursor.move_back();
             self.shift_back();
         }
-
-        self.get_cursor_pos()
     }
 
-    pub fn del_right(&mut self) -> Coord {
+    pub fn del_right(&mut self) {
         if self.cursor.can_move_right() {
             self.shift_back();
             self.cursor.reduce_offset();
         }
-
-        self.get_cursor_pos()
     }
 
     pub fn shift_back(&mut self) {

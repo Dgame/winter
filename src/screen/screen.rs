@@ -24,7 +24,7 @@ impl Screen {
         let mut front = Buffer::new(size);
         let back = Buffer::new(size);
         let length = front.length();
-        let line = Line::first(size, MutSlice::from_slice(front.mut_slice(0), length));
+        let line = Line::first(MutSlice::from_slice(front.mut_slice(0), length));
 
         Self {
             viewport,
@@ -37,7 +37,7 @@ impl Screen {
 
     pub fn resize(&mut self, size: Size) {
         self.viewport.resize(size);
-        self.line.resize(size);
+//        self.line.resize(size);
         self.front.clear();
     }
 
@@ -54,14 +54,14 @@ impl Screen {
             self.line.shift_front();
         }
 
-        let mut i = self.line.get_current_index();
+        let mut i = self.line.cursor().pos().to_1d(self.viewport.size());
         for ch in s.into().chars() {
             self.front.write(i, Cell::plain(ch));
             i += 1;
             self.line.cursor_mut().move_front();
         }
 
-        self.line.get_cursor_pos()
+        self.line.cursor().pos()
     }
 
     pub fn newline(&mut self, gap: usize) -> (Coord, String) {
@@ -74,11 +74,10 @@ impl Screen {
 
         self.line = Line::new(
             Cursor::new(Coord::new(0, self.top), gap),
-            self.viewport.size(),
             MutSlice::from_slice(self.front.mut_slice(offset), length),
         );
 
-        (self.line.get_cursor_pos(), input)
+        (self.line.cursor().pos(), input)
     }
 
     pub fn render(&mut self, console: &mut Console) {
