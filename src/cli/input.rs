@@ -1,12 +1,23 @@
 use enumflags::BitFlags;
-use num;
 use winapi::um::wincon::{
-    CAPSLOCK_ON, ENHANCED_KEY, INPUT_RECORD, KEY_EVENT_RECORD, LEFT_ALT_PRESSED, LEFT_CTRL_PRESSED,
-    NUMLOCK_ON, RIGHT_ALT_PRESSED, RIGHT_CTRL_PRESSED, SCROLLLOCK_ON, SHIFT_PRESSED,
+    FROM_LEFT_1ST_BUTTON_PRESSED, FROM_LEFT_2ND_BUTTON_PRESSED, FROM_LEFT_3RD_BUTTON_PRESSED,
+    FROM_LEFT_4TH_BUTTON_PRESSED, CAPSLOCK_ON, ENHANCED_KEY, INPUT_RECORD, KEY_EVENT_RECORD,
+    LEFT_ALT_PRESSED, LEFT_CTRL_PRESSED, NUMLOCK_ON, RIGHTMOST_BUTTON_PRESSED, RIGHT_ALT_PRESSED,
+    RIGHT_CTRL_PRESSED, SCROLLLOCK_ON, SHIFT_PRESSED,
 };
 
+#[repr(u32)]
+#[derive(Copy, Clone, Debug)]
+pub enum Button {
+    Left1st = FROM_LEFT_1ST_BUTTON_PRESSED,
+    Left2nd = FROM_LEFT_2ND_BUTTON_PRESSED,
+    Left3rd = FROM_LEFT_3RD_BUTTON_PRESSED,
+    Left4th = FROM_LEFT_4TH_BUTTON_PRESSED,
+    Right = RIGHTMOST_BUTTON_PRESSED,
+}
+
 // https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes
-#[derive(Debug, Eq, PartialEq, FromPrimitive)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, FromPrimitive)]
 pub enum Key {
     Unknown = 0,
     Back = 0x08,
@@ -501,63 +512,44 @@ pub enum Control {
     RCtrl = 0x100,
 }
 
-pub struct InputEvent {
-    pub is_pressed: bool,
-    pub key: Key,
-    pub control: BitFlags<Control>,
-}
+pub fn interpret_control(state: u32) -> BitFlags<Control> {
+    let mut control = BitFlags::empty();
 
-impl InputEvent {
-    pub fn from(record: &INPUT_RECORD) -> Self {
-        Self {
-            is_pressed: unsafe { record.Event.KeyEvent().bKeyDown == 1 },
-            key: num::FromPrimitive::from_u16(unsafe { record.Event.KeyEvent().wVirtualKeyCode })
-                .unwrap_or(Key::Unknown),
-            control: Self::get_control(unsafe { *record.Event.KeyEvent() }),
-        }
+    if (state & CAPSLOCK_ON) != 0 {
+        control |= Control::Capslock;
     }
 
-    fn get_control(record: KEY_EVENT_RECORD) -> BitFlags<Control> {
-        let mut control = BitFlags::empty();
-
-        let state = record.dwControlKeyState;
-
-        if (state & CAPSLOCK_ON) != 0 {
-            control |= Control::Capslock;
-        }
-
-        if (state & SCROLLLOCK_ON) != 0 {
-            control |= Control::Scrolllock;
-        }
-
-        if (state & SHIFT_PRESSED) != 0 {
-            control |= Control::Shift;
-        }
-
-        if (state & ENHANCED_KEY) != 0 {
-            control |= Control::Enhanced;
-        }
-
-        if (state & LEFT_ALT_PRESSED) != 0 {
-            control |= Control::LAlt;
-        }
-
-        if (state & RIGHT_ALT_PRESSED) != 0 {
-            control |= Control::RAlt;
-        }
-
-        if (state & LEFT_CTRL_PRESSED) != 0 {
-            control |= Control::LCtrl;
-        }
-
-        if (state & RIGHT_CTRL_PRESSED) != 0 {
-            control |= Control::RCtrl;
-        }
-
-        if (state & NUMLOCK_ON) != 0 {
-            control |= Control::Numlock;
-        }
-
-        control
+    if (state & SCROLLLOCK_ON) != 0 {
+        control |= Control::Scrolllock;
     }
+
+    if (state & SHIFT_PRESSED) != 0 {
+        control |= Control::Shift;
+    }
+
+    if (state & ENHANCED_KEY) != 0 {
+        control |= Control::Enhanced;
+    }
+
+    if (state & LEFT_ALT_PRESSED) != 0 {
+        control |= Control::LAlt;
+    }
+
+    if (state & RIGHT_ALT_PRESSED) != 0 {
+        control |= Control::RAlt;
+    }
+
+    if (state & LEFT_CTRL_PRESSED) != 0 {
+        control |= Control::LCtrl;
+    }
+
+    if (state & RIGHT_CTRL_PRESSED) != 0 {
+        control |= Control::RCtrl;
+    }
+
+    if (state & NUMLOCK_ON) != 0 {
+        control |= Control::Numlock;
+    }
+
+    control
 }

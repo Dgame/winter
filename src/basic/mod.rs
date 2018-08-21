@@ -1,3 +1,7 @@
+pub trait Empty {
+    fn empty() -> Self;
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct Size {
     pub width: usize,
@@ -60,13 +64,15 @@ pub struct Coord {
     pub y: usize,
 }
 
+impl Empty for Coord {
+    fn empty() -> Self {
+        Self::new(0, 0)
+    }
+}
+
 impl Coord {
     pub fn new(x: usize, y: usize) -> Self {
         Self { x, y }
-    }
-
-    pub fn zero() -> Self {
-        Self::new(0, 0)
     }
 
     pub fn to_1d(&self, size: Size) -> usize {
@@ -88,6 +94,12 @@ pub struct Cursor {
     farthest: usize,
 }
 
+impl Empty for Cursor {
+    fn empty() -> Self {
+        Self::new(Coord::empty(), 0)
+    }
+}
+
 impl Cursor {
     pub fn new(pos: Coord, nearest: usize) -> Self {
         Self {
@@ -95,10 +107,6 @@ impl Cursor {
             nearest,
             farthest: 0,
         }
-    }
-
-    pub fn empty() -> Self {
-        Self::new(Coord::zero(), 0)
     }
 
     pub fn pos(&self) -> Coord {

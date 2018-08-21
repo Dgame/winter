@@ -1,6 +1,6 @@
-use basic::{Coord, Size, Viewport};
-use screen::Screen;
+use basic::{Coord, Empty, Size, Viewport};
 use cli::Console;
+use screen::Screen;
 
 pub struct ScreenManager {
     screens: Vec<Screen>,
@@ -9,7 +9,7 @@ pub struct ScreenManager {
 
 impl ScreenManager {
     pub fn new(size: Size) -> Self {
-        let viewport = Viewport::with(Coord::zero(), size);
+        let viewport = Viewport::with(Coord::empty(), size);
         let screen = Screen::new(viewport);
         let mut screens = Vec::with_capacity(4);
         screens.push(screen);

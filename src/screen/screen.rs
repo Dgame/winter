@@ -37,7 +37,7 @@ impl Screen {
 
     pub fn resize(&mut self, size: Size) {
         self.viewport.resize(size);
-//        self.line.resize(size);
+        //        self.line.resize(size);
         self.front.clear();
     }
 

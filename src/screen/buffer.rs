@@ -1,6 +1,6 @@
 use basic::Size;
-use std::slice::Iter;
 use cli::Cell;
+use std::slice::Iter;
 
 pub struct Buffer {
     cells: Vec<Cell>,

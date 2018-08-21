@@ -1,10 +1,13 @@
-use basic::{Coord, Size};
+use basic::{Coord, Empty, Size};
+use cli::cell::DEFAULT_CH;
+use cli::Cell;
+use cli::Event;
 use std::cmp::{max, min};
 use std::ffi::CString;
 use std::io::{stdout, Write};
 use std::mem::zeroed;
 use std::ptr;
-use winapi::shared::minwindef::DWORD;
+use winapi::shared::minwindef::{DWORD, MAX_PATH};
 use winapi::shared::windef::HWND;
 use winapi::um::consoleapi::{
     GetConsoleMode, GetNumberOfConsoleInputEvents, ReadConsoleInputA, SetConsoleMode,
@@ -13,6 +16,10 @@ use winapi::um::errhandlingapi::GetLastError;
 use winapi::um::handleapi::INVALID_HANDLE_VALUE;
 use winapi::um::processenv::{GetCurrentDirectoryW, GetStdHandle, SetCurrentDirectoryA};
 use winapi::um::winbase::{STD_INPUT_HANDLE, STD_OUTPUT_HANDLE};
+use winapi::um::wincon::ENABLE_EXTENDED_FLAGS;
+use winapi::um::wincon::ENABLE_INSERT_MODE;
+use winapi::um::wincon::ENABLE_PROCESSED_INPUT;
+use winapi::um::wincon::ENABLE_QUICK_EDIT_MODE;
 use winapi::um::wincon::{
     CHAR_INFO_Char, FillConsoleOutputAttribute, FillConsoleOutputCharacterA, GetConsoleCursorInfo,
     GetConsoleScreenBufferInfo, GetConsoleWindow, SetConsoleCP, SetConsoleCursorInfo,
@@ -22,41 +29,6 @@ use winapi::um::wincon::{
 };
 use winapi::um::winnt::HANDLE;
 use winapi::um::winuser::{SetWindowPos, SWP_NOSIZE, SWP_NOZORDER};
-use cli::cell::DEFAULT_CH;
-use cli::Cell;
-
-trait Empty {
-    fn empty() -> Self;
-}
-
-impl Empty for COORD {
-    fn empty() -> COORD {
-        COORD { X: 0, Y: 0 }
-    }
-}
-
-impl Empty for SMALL_RECT {
-    fn empty() -> SMALL_RECT {
-        SMALL_RECT {
-            Top: 0,
-            Right: 0,
-            Bottom: 0,
-            Left: 0,
-        }
-    }
-}
-
-impl Empty for CONSOLE_SCREEN_BUFFER_INFO {
-    fn empty() -> CONSOLE_SCREEN_BUFFER_INFO {
-        CONSOLE_SCREEN_BUFFER_INFO {
-            dwSize: COORD::empty(),
-            dwCursorPosition: COORD::empty(),
-            wAttributes: 0,
-            srWindow: SMALL_RECT::empty(),
-            dwMaximumWindowSize: COORD::empty(),
-        }
-    }
-}
 
 pub struct Console {
     handle: HWND,
@@ -151,13 +123,18 @@ impl Console {
             handle,
             output,
             input,
-            mode: ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT,
+            mode: ENABLE_WINDOW_INPUT
+                | ENABLE_MOUSE_INPUT
+                | ENABLE_QUICK_EDIT_MODE
+                | ENABLE_EXTENDED_FLAGS
+                | ENABLE_PROCESSED_INPUT
+                | ENABLE_INSERT_MODE,
             restore_mode,
             screen_buffer_info,
             initial_size,
         };
         console.get_input();
-        console.set_cursor_pos(Coord::zero());
+        console.set_cursor_pos(Coord::empty());
         console.cursor_visible(true);
         console.clear();
 
@@ -313,7 +290,7 @@ impl Console {
         )
     }
 
-    pub fn get_input(&mut self) -> Vec<INPUT_RECORD> {
+    pub fn get_input(&mut self) -> Vec<Event> {
         let mut read = 0;
         unsafe {
             GetNumberOfConsoleInputEvents(self.input, &mut read);
@@ -326,7 +303,7 @@ impl Console {
         }
     }
 
-    fn process_input(&mut self, read: usize) -> Vec<INPUT_RECORD> {
+    fn process_input(&mut self, read: usize) -> Vec<Event> {
         let mut input_records = [INPUT_RECORD {
             EventType: 0,
             Event: unsafe { zeroed() },
@@ -344,15 +321,15 @@ impl Console {
 
         let mut records = Vec::new();
         for i in 0..read {
-            records.push(input_records[i]);
+            records.push(input_records[i].into());
         }
 
         records
     }
 
     pub fn get_dir(&self) -> String {
-        let mut buffer = [u16::default(); 128];
-        let read = unsafe { GetCurrentDirectoryW(128, buffer.as_mut_ptr()) };
+        let mut buffer = [u16::default(); MAX_PATH];
+        let read = unsafe { GetCurrentDirectoryW(buffer.len() as u32, buffer.as_mut_ptr()) };
         assert!(read > 0 && buffer.len() > read as usize);
 
         String::from_utf16_lossy(&buffer).to_string()
@@ -362,5 +339,34 @@ impl Console {
         let cstr = CString::new(dir).unwrap();
         let ret = unsafe { SetCurrentDirectoryA(cstr.as_ptr()) };
         assert_ne!(ret, 0);
+    }
+}
+
+impl Empty for COORD {
+    fn empty() -> COORD {
+        COORD { X: 0, Y: 0 }
+    }
+}
+
+impl Empty for SMALL_RECT {
+    fn empty() -> SMALL_RECT {
+        SMALL_RECT {
+            Top: 0,
+            Right: 0,
+            Bottom: 0,
+            Left: 0,
+        }
+    }
+}
+
+impl Empty for CONSOLE_SCREEN_BUFFER_INFO {
+    fn empty() -> CONSOLE_SCREEN_BUFFER_INFO {
+        CONSOLE_SCREEN_BUFFER_INFO {
+            dwSize: COORD::empty(),
+            dwCursorPosition: COORD::empty(),
+            wAttributes: 0,
+            srWindow: SMALL_RECT::empty(),
+            dwMaximumWindowSize: COORD::empty(),
+        }
     }
 }

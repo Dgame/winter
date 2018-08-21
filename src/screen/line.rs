@@ -1,6 +1,6 @@
-use basic::Cursor;
-use memory::MutSlice;
+use basic::{Cursor, Empty};
 use cli::Cell;
+use memory::MutSlice;
 
 pub struct Line {
     cursor: Cursor,
