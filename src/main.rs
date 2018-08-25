@@ -1,7 +1,8 @@
 extern crate winter;
 
-use winter::basic::Size;
+use winter::basic::{CursorMove, Size};
 use winter::cli::{Event, Key};
+use winter::screen::CursorDel;
 use winter::terminal::Terminal;
 
 fn main() {

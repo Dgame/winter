@@ -42,3 +42,9 @@ impl From<char> for Cell {
         Cell::new(ch, DEFAULT_FG, DEFAULT_BG)
     }
 }
+
+impl Into<char> for Cell {
+    fn into(self) -> char {
+        self.ch
+    }
+}

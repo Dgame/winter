@@ -53,16 +53,14 @@ pub enum Event {
 impl Into<Event> for INPUT_RECORD {
     fn into(self) -> Event {
         match self.EventType {
-            KEY_EVENT => {
-                Event::Key(KeyEvent {
-                    is_pressed: unsafe { self.Event.KeyEvent().bKeyDown == 1 },
-                    code: FromPrimitive::from_u16(unsafe { self.Event.KeyEvent().wVirtualKeyCode })
-                        .unwrap_or(Key::Unknown),
-                    control: Control::interpret(unsafe { self.Event.KeyEvent().dwControlKeyState }),
-                    repeat_count: unsafe { self.Event.KeyEvent().wRepeatCount },
-                })
-            }
-            _ => Event::Unknown
+            KEY_EVENT => Event::Key(KeyEvent {
+                is_pressed: unsafe { self.Event.KeyEvent().bKeyDown == 1 },
+                code: FromPrimitive::from_u16(unsafe { self.Event.KeyEvent().wVirtualKeyCode })
+                    .unwrap_or(Key::Unknown),
+                control: Control::interpret(unsafe { self.Event.KeyEvent().dwControlKeyState }),
+                repeat_count: unsafe { self.Event.KeyEvent().wRepeatCount },
+            }),
+            _ => Event::Unknown,
         }
     }
 }

@@ -1,6 +1,7 @@
-use basic::{Cursor, Empty};
-use cli::Cell;
+use basic::{Cursor, CursorMove, Empty};
+use cli::{Cell, Text, Write};
 use memory::MutSlice;
+use screen::{CursorDel, CursorShift};
 
 pub struct Line {
     cursor: Cursor,
@@ -20,10 +21,6 @@ impl Line {
         self.cursor
     }
 
-    pub fn cursor_mut(&mut self) -> &mut Cursor {
-        &mut self.cursor
-    }
-
     pub fn get(&self) -> String {
         let nearest = self.cursor.nearest();
         let farthest = self.cursor.farthest();
@@ -39,30 +36,10 @@ impl Line {
 
         s.trim().to_string()
     }
+}
 
-    pub fn move_right(&mut self) {
-        self.cursor.move_right()
-    }
-
-    pub fn move_left(&mut self) {
-        self.cursor.move_left()
-    }
-
-    pub fn del_left(&mut self) {
-        if self.cursor.can_move_left() {
-            self.cursor.move_back();
-            self.shift_back();
-        }
-    }
-
-    pub fn del_right(&mut self) {
-        if self.cursor.can_move_right() {
-            self.shift_back();
-            self.cursor.reduce_offset();
-        }
-    }
-
-    pub fn shift_back(&mut self) {
+impl CursorShift for Line {
+    fn shift_left(&mut self) {
         let index = self.cursor.pos().x;
         let length = self.cursor.farthest();
 
@@ -82,7 +59,7 @@ impl Line {
         self.buffer.set(ci, Cell::default());
     }
 
-    pub fn shift_front(&mut self) {
+    fn shift_right(&mut self) {
         let index = self.cursor.pos().x;
         let length = self.cursor.farthest();
 
@@ -99,5 +76,50 @@ impl Line {
             self.buffer.set(ci + 1, cell);
             ci += 1;
         }
+    }
+}
+
+impl CursorMove for Line {
+    fn move_left(&mut self) {
+        self.cursor.move_left()
+    }
+
+    fn move_right(&mut self) {
+        self.cursor.move_right()
+    }
+}
+
+impl CursorDel for Line {
+    fn del_left(&mut self) {
+        if self.cursor.can_move_left() {
+            self.cursor.move_back();
+            self.shift_left();
+        }
+    }
+
+    fn del_right(&mut self) {
+        if self.cursor.can_move_right() {
+            self.shift_left();
+            self.cursor.reduce_offset();
+        }
+    }
+}
+
+impl Write for Line {
+    fn write_text<T: Into<Text>>(&mut self, text: T) {
+        if !self.cursor.at_end() {
+            self.shift_right();
+        }
+
+        let mut index = self.cursor.pos().x;
+        for cell in text.into().iter() {
+            self.write_cell(index, *cell);
+            index += 1;
+        }
+    }
+
+    fn write_cell(&mut self, index: usize, cell: Cell) {
+        self.buffer.set(index, cell);
+        self.cursor.move_front();
     }
 }

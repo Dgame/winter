@@ -1,7 +1,7 @@
-use basic::{Coord, Cursor, Size, Viewport};
-use cli::{Cell, Console};
+use basic::{Coord, Cursor, CursorMove, Size, Viewport};
+use cli::{Console, Text, Write};
 use memory::MutSlice;
-use screen::{Buffer, Line};
+use screen::{Buffer, CursorDel, Line};
 
 pub struct Screen {
     viewport: Viewport,
@@ -45,51 +45,8 @@ impl Screen {
         self.line.cursor().pos()
     }
 
-    pub fn move_right(&mut self) {
-        self.line.move_right()
-    }
-
-    pub fn move_left(&mut self) {
-        self.line.move_left()
-    }
-
-    pub fn del_left(&mut self) {
-        self.line.del_left();
-    }
-
-    pub fn del_right(&mut self) {
-        self.line.del_right();
-    }
-
-    pub fn write_text<S: Into<String>>(&mut self, s: S) -> Coord {
-        if !self.line.cursor().at_end() {
-            self.line.shift_front();
-        }
-
-        let mut pos = self.cursor_pos();
-        for ch in s.into().chars() {
-            let cell = Cell::from(ch);
-            self.write_cell(pos, cell);
-            pos.x += 1;
-        }
-
-        self.cursor_pos()
-    }
-
-    pub fn write(&mut self, cells: &[Cell]) -> Coord {
-        let mut pos = self.cursor_pos();
-        for cell in cells {
-            self.write_cell(pos, *cell);
-            pos.x += 1;
-        }
-
-        self.cursor_pos()
-    }
-
-    pub fn write_cell(&mut self, pos: Coord, cell: Cell) -> Coord {
-        let i = pos.to_1d(self.viewport.size());
-        self.front.write(i, cell);
-        self.line.cursor_mut().move_front();
+    pub fn write<T: Into<Text>>(&mut self, text: T) -> Coord {
+        self.line.write_text(text);
 
         self.cursor_pos()
     }
@@ -99,7 +56,7 @@ impl Screen {
 
         self.top += 1;
 
-        let offset = Coord::new(0, self.top).to_1d(self.viewport.size());
+        let offset = Coord::new(0, self.top).to_1d(self.viewport.width());
         let length = self.front.length();
 
         self.line = Line::new(
@@ -113,7 +70,7 @@ impl Screen {
     pub fn render(&mut self, console: &mut Console) {
         for (i, cell) in self.front.iter().enumerate() {
             if self.back.need_update(i, *cell) {
-                let mut pos = Coord::index_to_2d(i, self.viewport.size());
+                let mut pos = Coord::index_to_2d(i, self.viewport.width());
                 pos.x += self.viewport.x();
                 pos.y += self.viewport.y();
 
@@ -121,5 +78,25 @@ impl Screen {
                 self.back.write(i, *cell);
             }
         }
+    }
+}
+
+impl CursorMove for Screen {
+    fn move_left(&mut self) {
+        self.line.move_left()
+    }
+
+    fn move_right(&mut self) {
+        self.line.move_right()
+    }
+}
+
+impl CursorDel for Screen {
+    fn del_left(&mut self) {
+        self.line.del_left();
+    }
+
+    fn del_right(&mut self) {
+        self.line.del_right();
     }
 }
