@@ -1,9 +1,8 @@
 use basic::{Coord, Size};
-use cli::input::interpret_control;
 use cli::input::{Button, Control, Key};
 use enumflags::BitFlags;
 use num::FromPrimitive;
-use winapi::um::wincon::INPUT_RECORD;
+use winapi::um::wincon::{INPUT_RECORD, KEY_EVENT};
 
 #[derive(Debug, Clone)]
 pub struct KeyEvent {
@@ -54,14 +53,16 @@ pub enum Event {
 impl Into<Event> for INPUT_RECORD {
     fn into(self) -> Event {
         match self.EventType {
-            KEY_EVENT => Event::Key(KeyEvent {
-                is_pressed: unsafe { self.Event.KeyEvent().bKeyDown == 1 },
-                code: FromPrimitive::from_u16(unsafe { self.Event.KeyEvent().wVirtualKeyCode })
-                    .unwrap_or(Key::Unknown),
-                control: interpret_control(unsafe { self.Event.KeyEvent().dwControlKeyState }),
-                repeat_count: unsafe { self.Event.KeyEvent().wRepeatCount },
-            }),
-            _ => Event::Unknown,
+            KEY_EVENT => {
+                Event::Key(KeyEvent {
+                    is_pressed: unsafe { self.Event.KeyEvent().bKeyDown == 1 },
+                    code: FromPrimitive::from_u16(unsafe { self.Event.KeyEvent().wVirtualKeyCode })
+                        .unwrap_or(Key::Unknown),
+                    control: Control::interpret(unsafe { self.Event.KeyEvent().dwControlKeyState }),
+                    repeat_count: unsafe { self.Event.KeyEvent().wRepeatCount },
+                })
+            }
+            _ => Event::Unknown
         }
     }
 }

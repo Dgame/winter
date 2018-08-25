@@ -1,7 +1,7 @@
 use enumflags::BitFlags;
 use winapi::um::wincon::{
     FROM_LEFT_1ST_BUTTON_PRESSED, FROM_LEFT_2ND_BUTTON_PRESSED, FROM_LEFT_3RD_BUTTON_PRESSED,
-    FROM_LEFT_4TH_BUTTON_PRESSED, CAPSLOCK_ON, ENHANCED_KEY, INPUT_RECORD, KEY_EVENT_RECORD,
+    FROM_LEFT_4TH_BUTTON_PRESSED, CAPSLOCK_ON, ENHANCED_KEY,
     LEFT_ALT_PRESSED, LEFT_CTRL_PRESSED, NUMLOCK_ON, RIGHTMOST_BUTTON_PRESSED, RIGHT_ALT_PRESSED,
     RIGHT_CTRL_PRESSED, SCROLLLOCK_ON, SHIFT_PRESSED,
 };
@@ -512,44 +512,46 @@ pub enum Control {
     RCtrl = 0x100,
 }
 
-pub fn interpret_control(state: u32) -> BitFlags<Control> {
-    let mut control = BitFlags::empty();
+impl Control {
+    pub fn interpret(state: u32) -> BitFlags<Self> {
+        let mut control = BitFlags::empty();
 
-    if (state & CAPSLOCK_ON) != 0 {
-        control |= Control::Capslock;
+        if (state & CAPSLOCK_ON) != 0 {
+            control |= Control::Capslock;
+        }
+
+        if (state & SCROLLLOCK_ON) != 0 {
+            control |= Control::Scrolllock;
+        }
+
+        if (state & SHIFT_PRESSED) != 0 {
+            control |= Control::Shift;
+        }
+
+        if (state & ENHANCED_KEY) != 0 {
+            control |= Control::Enhanced;
+        }
+
+        if (state & LEFT_ALT_PRESSED) != 0 {
+            control |= Control::LAlt;
+        }
+
+        if (state & RIGHT_ALT_PRESSED) != 0 {
+            control |= Control::RAlt;
+        }
+
+        if (state & LEFT_CTRL_PRESSED) != 0 {
+            control |= Control::LCtrl;
+        }
+
+        if (state & RIGHT_CTRL_PRESSED) != 0 {
+            control |= Control::RCtrl;
+        }
+
+        if (state & NUMLOCK_ON) != 0 {
+            control |= Control::Numlock;
+        }
+
+        control
     }
-
-    if (state & SCROLLLOCK_ON) != 0 {
-        control |= Control::Scrolllock;
-    }
-
-    if (state & SHIFT_PRESSED) != 0 {
-        control |= Control::Shift;
-    }
-
-    if (state & ENHANCED_KEY) != 0 {
-        control |= Control::Enhanced;
-    }
-
-    if (state & LEFT_ALT_PRESSED) != 0 {
-        control |= Control::LAlt;
-    }
-
-    if (state & RIGHT_ALT_PRESSED) != 0 {
-        control |= Control::RAlt;
-    }
-
-    if (state & LEFT_CTRL_PRESSED) != 0 {
-        control |= Control::LCtrl;
-    }
-
-    if (state & RIGHT_CTRL_PRESSED) != 0 {
-        control |= Control::RCtrl;
-    }
-
-    if (state & NUMLOCK_ON) != 0 {
-        control |= Control::Numlock;
-    }
-
-    control
 }

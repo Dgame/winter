@@ -40,6 +40,14 @@ impl Line {
         s.trim().to_string()
     }
 
+    pub fn move_right(&mut self) {
+        self.cursor.move_right()
+    }
+
+    pub fn move_left(&mut self) {
+        self.cursor.move_left()
+    }
+
     pub fn del_left(&mut self) {
         if self.cursor.can_move_left() {
             self.cursor.move_back();

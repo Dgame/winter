@@ -14,15 +14,7 @@ pub struct Cell {
 
 impl Cell {
     pub fn default() -> Self {
-        Self::plain(DEFAULT_CH)
-    }
-
-    pub fn plain(ch: char) -> Self {
-        Self {
-            fg: DEFAULT_FG,
-            bg: DEFAULT_BG,
-            ch,
-        }
+        Self::from(DEFAULT_CH)
     }
 
     pub fn border() -> Self {
@@ -42,5 +34,11 @@ impl Cell {
 
     pub fn is_empty(&self) -> bool {
         self.ch == DEFAULT_CH
+    }
+}
+
+impl From<char> for Cell {
+    fn from(ch: char) -> Self {
+        Cell::new(ch, DEFAULT_FG, DEFAULT_BG)
     }
 }

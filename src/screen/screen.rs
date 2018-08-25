@@ -41,27 +41,57 @@ impl Screen {
         self.front.clear();
     }
 
-    pub fn line(&self) -> &Line {
-        &self.line
+    pub fn cursor_pos(&self) -> Coord {
+        self.line.cursor().pos()
     }
 
-    pub fn line_mut(&mut self) -> &mut Line {
-        &mut self.line
+    pub fn move_right(&mut self) {
+        self.line.move_right()
     }
 
-    pub fn write<S: Into<String>>(&mut self, s: S) -> Coord {
+    pub fn move_left(&mut self) {
+        self.line.move_left()
+    }
+
+    pub fn del_left(&mut self) {
+        self.line.del_left();
+    }
+
+    pub fn del_right(&mut self) {
+        self.line.del_right();
+    }
+
+    pub fn write_text<S: Into<String>>(&mut self, s: S) -> Coord {
         if !self.line.cursor().at_end() {
             self.line.shift_front();
         }
 
-        let mut i = self.line.cursor().pos().to_1d(self.viewport.size());
+        let mut pos = self.cursor_pos();
         for ch in s.into().chars() {
-            self.front.write(i, Cell::plain(ch));
-            i += 1;
-            self.line.cursor_mut().move_front();
+            let cell = Cell::from(ch);
+            self.write_cell(pos, cell);
+            pos.x += 1;
         }
 
-        self.line.cursor().pos()
+        self.cursor_pos()
+    }
+
+    pub fn write(&mut self, cells: &[Cell]) -> Coord {
+        let mut pos = self.cursor_pos();
+        for cell in cells {
+            self.write_cell(pos, *cell);
+            pos.x += 1;
+        }
+
+        self.cursor_pos()
+    }
+
+    pub fn write_cell(&mut self, pos: Coord, cell: Cell) -> Coord {
+        let i = pos.to_1d(self.viewport.size());
+        self.front.write(i, cell);
+        self.line.cursor_mut().move_front();
+
+        self.cursor_pos()
     }
 
     pub fn newline(&mut self, gap: usize) -> (Coord, String) {
@@ -77,7 +107,7 @@ impl Screen {
             MutSlice::from_slice(self.front.mut_slice(offset), length),
         );
 
-        (self.line.cursor().pos(), input)
+        (self.cursor_pos(), input)
     }
 
     pub fn render(&mut self, console: &mut Console) {

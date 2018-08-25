@@ -133,7 +133,7 @@ impl Console {
             screen_buffer_info,
             initial_size,
         };
-        console.get_input();
+        console.poll_events();
         console.set_cursor_pos(Coord::empty());
         console.cursor_visible(true);
         console.clear();
@@ -290,7 +290,7 @@ impl Console {
         )
     }
 
-    pub fn get_input(&mut self) -> Vec<Event> {
+    pub fn poll_events(&mut self) -> Vec<Event> {
         let mut read = 0;
         unsafe {
             GetNumberOfConsoleInputEvents(self.input, &mut read);

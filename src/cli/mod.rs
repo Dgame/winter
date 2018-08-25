@@ -3,8 +3,10 @@ pub mod color;
 pub mod console;
 pub mod event;
 pub mod input;
+pub mod text;
 
 pub use self::cell::Cell;
+pub use self::text::Text;
 pub use self::color::Color;
 pub use self::console::Console;
 pub use self::event::Event;

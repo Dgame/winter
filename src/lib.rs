@@ -13,3 +13,4 @@ pub mod basic;
 pub mod cli;
 pub mod memory;
 pub mod screen;
+pub mod terminal;
