@@ -1,6 +1,6 @@
 use basic::{Cursor, CursorMove, Empty};
 use cli::{Cell, Text, Write};
-use memory::MutSlice;
+use memory::{MutSlice, SetAt};
 use screen::{CursorDel, CursorShift};
 
 pub struct Line {
@@ -21,20 +21,17 @@ impl Line {
         self.cursor
     }
 
-    pub fn get(&self) -> String {
+    pub fn get(&self) -> &[Cell] {
         let nearest = self.cursor.nearest();
         let farthest = self.cursor.farthest();
 
-        let s: String = self
-            .buffer
-            .to_slice()
-            .iter()
-            .skip(nearest)
-            .take(farthest)
-            .map(|cell| cell.ch)
-            .collect();
+        &self.buffer.as_ref()[nearest..farthest]
+    }
+}
 
-        s.trim().to_string()
+impl ToString for Line {
+    fn to_string(&self) -> String {
+        self.get().iter().map(|cell| cell.ch).collect()
     }
 }
 
@@ -45,7 +42,7 @@ impl CursorShift for Line {
 
         let cells: Vec<Cell> = self
             .buffer
-            .to_slice()
+            .as_ref()
             .iter()
             .skip(index + 1)
             .take(length)
@@ -53,10 +50,10 @@ impl CursorShift for Line {
             .collect();
         let mut ci = index;
         for cell in cells {
-            self.buffer.set(ci, cell);
+            self.buffer.set_at(ci, cell);
             ci += 1;
         }
-        self.buffer.set(ci, Cell::default());
+        self.buffer.set_at(ci, Cell::default());
     }
 
     fn shift_right(&mut self) {
@@ -65,7 +62,7 @@ impl CursorShift for Line {
 
         let cells: Vec<Cell> = self
             .buffer
-            .to_slice()
+            .as_ref()
             .iter()
             .skip(index)
             .take(length)
@@ -73,7 +70,7 @@ impl CursorShift for Line {
             .collect();
         let mut ci = index;
         for cell in cells {
-            self.buffer.set(ci + 1, cell);
+            self.buffer.set_at(ci + 1, cell);
             ci += 1;
         }
     }
@@ -119,7 +116,7 @@ impl Write for Line {
     }
 
     fn write_cell(&mut self, index: usize, cell: Cell) {
-        self.buffer.set(index, cell);
+        self.buffer.set_at(index, cell);
         self.cursor.move_front();
     }
 }

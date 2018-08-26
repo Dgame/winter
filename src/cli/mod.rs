@@ -14,5 +14,5 @@ pub use self::text::Text;
 
 pub trait Write {
     fn write_text<T: Into<Text>>(&mut self, text: T);
-    fn write_cell(&mut self, width: usize, cell: Cell);
+    fn write_cell(&mut self, index: usize, cell: Cell);
 }

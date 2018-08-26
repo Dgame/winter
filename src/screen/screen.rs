@@ -23,8 +23,7 @@ impl Screen {
 
         let mut front = Buffer::new(size);
         let back = Buffer::new(size);
-        let length = front.length();
-        let line = Line::first(MutSlice::from_slice(front.mut_slice(0), length));
+        let line = Line::first(MutSlice::from(front.as_mut()));
 
         Self {
             viewport,
@@ -33,6 +32,12 @@ impl Screen {
             line,
             top: 0,
         }
+    }
+
+    pub fn clear(&mut self) {
+        self.front.clear();
+        self.top = 0;
+        self.line = Line::first(MutSlice::from(self.front.as_mut()));
     }
 
     pub fn resize(&mut self, size: Size) {
@@ -52,16 +57,15 @@ impl Screen {
     }
 
     pub fn newline(&mut self, gap: usize) -> (Coord, String) {
-        let input: String = self.line.get();
+        let input: String = self.line.to_string();
 
         self.top += 1;
 
         let offset = Coord::new(0, self.top).to_1d(self.viewport.width());
-        let length = self.front.length();
 
         self.line = Line::new(
             Cursor::new(Coord::new(0, self.top), gap),
-            MutSlice::from_slice(self.front.mut_slice(offset), length),
+            MutSlice::from(&mut self.front.as_mut()[offset..]),
         );
 
         (self.cursor_pos(), input)

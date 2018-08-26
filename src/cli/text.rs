@@ -1,14 +1,23 @@
 use cli::Cell;
-use std::slice::Iter;
+use std::borrow::Cow;
+use std::ops::Deref;
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct Text {
     vec: Vec<Cell>,
 }
 
-impl Text {
-    pub fn iter(&self) -> Iter<Cell> {
-        self.vec.iter()
+impl Deref for Text {
+    type Target = Vec<Cell>;
+
+    fn deref(&self) -> &Vec<Cell> {
+        &self.vec
+    }
+}
+
+impl<'a> From<Cow<'a, str>> for Text {
+    fn from(s: Cow<'a, str>) -> Self {
+        s.to_string().into()
     }
 }
 

@@ -1,6 +1,6 @@
 use basic::Size;
 use cli::Cell;
-use std::slice::Iter;
+use std::ops::Deref;
 
 pub struct Buffer {
     cells: Vec<Cell>,
@@ -17,18 +17,6 @@ impl Buffer {
         Self { cells }
     }
 
-    pub fn iter(&self) -> Iter<Cell> {
-        self.cells.iter()
-    }
-
-    pub fn mut_slice(&mut self, offset: usize) -> &mut [Cell] {
-        &mut self.cells[offset..]
-    }
-
-    pub fn length(&self) -> usize {
-        self.cells.len()
-    }
-
     pub fn clear(&mut self) {
         for cell in self.cells.iter_mut() {
             *cell = Cell::default();
@@ -41,5 +29,19 @@ impl Buffer {
 
     pub fn write(&mut self, index: usize, cell: Cell) {
         self.cells[index] = cell;
+    }
+}
+
+impl Deref for Buffer {
+    type Target = Vec<Cell>;
+
+    fn deref(&self) -> &Vec<Cell> {
+        &self.cells
+    }
+}
+
+impl AsMut<[Cell]> for Buffer {
+    fn as_mut(&mut self) -> &mut [Cell] {
+        self.cells.as_mut()
     }
 }
