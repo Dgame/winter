@@ -17,6 +17,22 @@ impl Cell {
         Self::from(DEFAULT_CH)
     }
 
+    pub fn error(ch: char) -> Self {
+        Self {
+            ch,
+            fg: Color::DarkRed,
+            bg: DEFAULT_BG,
+        }
+    }
+
+    pub fn success(ch: char) -> Self {
+        Self {
+            ch,
+            fg: Color::DarkGreen,
+            bg: DEFAULT_BG,
+        }
+    }
+
     pub fn border() -> Self {
         let mut cell = Self::default();
         cell.bg = Color::DarkWhite;

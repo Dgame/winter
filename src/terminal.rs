@@ -1,6 +1,6 @@
 use basic::{CursorMove, Size};
 use cli::event::KeyEvent;
-use cli::{Console, Event};
+use cli::{Console, Display, Event};
 use screen::{CursorDel, ScreenManager};
 use std::io;
 use std::process::{Command, Output};
@@ -24,10 +24,6 @@ impl Terminal {
 
     fn clear(&mut self) {
         self.manager.screen_mut().clear();
-        self.manager.screen_mut().write(self.console.get_dir());
-        self.manager.screen_mut().newline(0);
-        let cursor_pos = self.manager.screen_mut().cursor_pos();
-        self.console.set_cursor_pos(cursor_pos);
     }
 
     pub fn poll_events(&mut self) -> Vec<Event> {
@@ -41,30 +37,26 @@ impl Terminal {
 
     pub fn newline(&mut self) {
         let (_, input) = self.manager.screen_mut().newline(0);
-        self.manager.screen_mut().write(self.console.get_dir());
-        self.manager.screen_mut().newline(0);
-
-        //        println!("{:?}", input);
-
-        match input.as_str() {
-            "cd" => self.console.set_dir(".."),
-            "cls" => self.clear(),
-            _ => {
-                let token: Vec<&str> = input.split_whitespace().collect();
-                match token.len() {
-                    0 => {}
-                    1 => {
-                        let output = Command::new(token[0]).output();
-                        self.process(output);
-                    }
-                    _ => {
-                        let output = Command::new(token[0]).args(&token[1..]).output();
-                        self.process(output);
-                    }
+        let token: Vec<&str> = input.split_whitespace().collect();
+        match token.len() {
+            0 => {}
+            1 => match token[0] {
+                "cls" => self.clear(),
+                _ => {
+                    let output = Command::new(token[0]).output();
+                    self.process(output);
                 }
-            }
+            },
+            _ => match token[0] {
+                "cd" => self.console.set_dir(&token[1..].join(" ")),
+                _ => {
+                    let output = Command::new(token[0]).args(&token[1..]).output();
+                    self.process(output);
+                }
+            },
         }
-
+        self.manager.screen_mut().newline(0);
+        self.manager.screen_mut().write(self.console.get_dir());
         self.manager.screen_mut().newline(2);
         let cursor_pos = self.manager.screen_mut().write("~ ");
         self.console.set_cursor_pos(cursor_pos);
@@ -84,9 +76,14 @@ impl Terminal {
                 }
             }
             Err(e) => {
-                self.manager.screen_mut().write(e.to_string());
+                self.manager.screen_mut().write(Display::error(e));
             }
         }
+        //        let cursor = self.manager.screen().line().cursor();
+        //        let mut pos = Coord::index_to_2d(cursor.index(), 25);
+        //        pos.y += 2;
+        //        self.console.set_cursor_pos(pos);
+        //        println!("{:?}", pos);
     }
 
     pub fn render(&mut self) {

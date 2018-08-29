@@ -1,5 +1,5 @@
 use basic::{Cursor, CursorMove, Empty};
-use cli::{Cell, Text, Write};
+use cli::{Cell, Display, Write};
 use memory::{MutSlice, SetAt};
 use screen::{CursorDel, CursorShift};
 
@@ -37,7 +37,7 @@ impl ToString for Line {
 
 impl CursorShift for Line {
     fn shift_left(&mut self) {
-        let index = self.cursor.pos().x;
+        let index = self.cursor.index();
         let length = self.cursor.farthest();
 
         let cells: Vec<Cell> = self
@@ -57,7 +57,7 @@ impl CursorShift for Line {
     }
 
     fn shift_right(&mut self) {
-        let index = self.cursor.pos().x;
+        let index = self.cursor.index();
         let length = self.cursor.farthest();
 
         let cells: Vec<Cell> = self
@@ -103,12 +103,12 @@ impl CursorDel for Line {
 }
 
 impl Write for Line {
-    fn write_text<T: Into<Text>>(&mut self, text: T) {
+    fn write_text<T: Into<Display>>(&mut self, text: T) {
         if !self.cursor.at_end() {
             self.shift_right();
         }
 
-        let mut index = self.cursor.pos().x;
+        let mut index = self.cursor.index();
         for cell in text.into().iter() {
             self.write_cell(index, *cell);
             index += 1;

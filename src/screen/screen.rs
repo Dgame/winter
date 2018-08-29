@@ -1,5 +1,5 @@
 use basic::{Coord, Cursor, CursorMove, Size, Viewport};
-use cli::{Console, Text, Write};
+use cli::{Console, Display, Write};
 use memory::MutSlice;
 use screen::{Buffer, CursorDel, Line};
 
@@ -46,11 +46,26 @@ impl Screen {
         self.front.clear();
     }
 
-    pub fn cursor_pos(&self) -> Coord {
-        self.line.cursor().pos()
+    pub fn top(&self) -> usize {
+        self.top
     }
 
-    pub fn write<T: Into<Text>>(&mut self, text: T) -> Coord {
+    pub fn viewport(&self) -> &Viewport {
+        &self.viewport
+    }
+
+    pub fn line(&self) -> &Line {
+        &self.line
+    }
+
+    pub fn cursor_pos(&self) -> Coord {
+        let mut pos = Coord::index_to_2d(self.line.cursor().index(), self.viewport.width());
+        pos.y += self.top;
+
+        pos
+    }
+
+    pub fn write<T: Into<Display>>(&mut self, text: T) -> Coord {
         self.line.write_text(text);
 
         self.cursor_pos()
@@ -58,13 +73,13 @@ impl Screen {
 
     pub fn newline(&mut self, gap: usize) -> (Coord, String) {
         let input: String = self.line.to_string();
-
-        self.top += 1;
+        let pos = Coord::index_to_2d(self.line.cursor().index(), self.viewport.width());
+        self.top += pos.y + 1;
 
         let offset = Coord::new(0, self.top).to_1d(self.viewport.width());
 
         self.line = Line::new(
-            Cursor::new(Coord::new(0, self.top), gap),
+            Cursor::new(0, gap),
             MutSlice::from(&mut self.front.as_mut()[offset..]),
         );
 

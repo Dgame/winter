@@ -14,7 +14,7 @@ use winapi::um::consoleapi::{
 };
 use winapi::um::errhandlingapi::GetLastError;
 use winapi::um::handleapi::INVALID_HANDLE_VALUE;
-use winapi::um::processenv::{GetCurrentDirectoryW, GetStdHandle, SetCurrentDirectoryA};
+use winapi::um::processenv::{GetCurrentDirectoryA, GetStdHandle, SetCurrentDirectoryA};
 use winapi::um::winbase::{STD_INPUT_HANDLE, STD_OUTPUT_HANDLE};
 use winapi::um::wincon::ENABLE_EXTENDED_FLAGS;
 use winapi::um::wincon::ENABLE_INSERT_MODE;
@@ -328,11 +328,14 @@ impl Console {
     }
 
     pub fn get_dir(&self) -> String {
-        let mut buffer = [u16::default(); MAX_PATH];
-        let read = unsafe { GetCurrentDirectoryW(buffer.len() as u32, buffer.as_mut_ptr()) };
+        let mut buffer = [i8::default(); MAX_PATH];
+        let read = unsafe { GetCurrentDirectoryA(buffer.len() as u32, buffer.as_mut_ptr()) };
         assert!(read > 0 && buffer.len() > read as usize);
-
-        String::from_utf16_lossy(&buffer).to_string()
+        let data: Vec<u8> = buffer
+            .iter()
+            .filter_map(|b| if *b > 0 { Some(*b as u8) } else { None })
+            .collect();
+        String::from_utf8_lossy(&data).to_string()
     }
 
     pub fn set_dir(&self, dir: &str) {
